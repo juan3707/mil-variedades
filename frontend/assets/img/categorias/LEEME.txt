@@ -1,0 +1,11 @@
+Pon aqui fotos reales de cada categoria (opcional).
+
+El nombre del archivo debe ser el nombre de la categoria en
+minusculas, sin tildes, con guiones en vez de espacios. Ejemplos:
+
+Categoria "Papelería"        -> papeleria.jpg
+Categoria "Útiles Escolares" -> utiles-escolares.jpg
+Categoria "Aseo y Limpieza"  -> aseo-y-limpieza.jpg
+
+Si el archivo no existe, la tarjeta simplemente se queda con el
+icono de color (no se rompe nada).

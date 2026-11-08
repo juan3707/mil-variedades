@@ -1,0 +1,476 @@
+cd/<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mil Variedades | La Ceja</title>
+  <meta name="description" content="Papelería, útiles escolares, artículos de oficina y productos de limpieza en La Ceja, Antioquia. Pide por WhatsApp." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body>
+  <a href="#contenido" class="skip-link">Saltar al contenido</a>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="contenedor">
+      <div class="topbar-left">
+        <span><i class="fa-solid fa-location-dot"></i> La Ceja, Antioquia</span>
+        <span><i class="fa-solid fa-truck-fast"></i> Domicilios en el Oriente Antioqueño</span>
+      </div>
+      <div class="topbar-right">
+        <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+<header class="site-header">
+  <div class="contenedor header-fila">
+    <a href="index.html" class="logo">
+      <img src="../assets/img/LOGO_MINIMALISTA.jpg" alt="Logo Mil Variedades" class="logo-img">
+      <span class="logo-texto">
+        <h1>Mil Variedades</h1>
+        <span>La Ceja</span>
+      </span>
+    </a>
+
+      <div class="buscador">
+        <input type="search" id="input-busqueda" placeholder="¿Qué producto estás buscando?" aria-label="Buscar productos" autocomplete="off" />
+        <button aria-label="Buscar"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <div class="buscador-sugerencias" id="buscador-sugerencias"></div>
+      </div>
+
+      <div class="header-actions">
+        <a href="#" id="btn-whatsapp-header" class="btn-whatsapp-header" target="_blank" rel="noopener">
+          <i class="fa-brands fa-whatsapp"></i>
+          <span>Contáctanos</span>
+        </a>
+        <a href="login.html" class="btn-login-header">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>Iniciar sesión</span>
+        </a>
+        <button class="btn-carrito" id="btn-carrito" aria-label="Ver pedido">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="carrito-contador" id="carrito-contador">0</span>
+        </button>
+      </div>
+
+      <button class="btn-menu-movil" id="btn-abrir-sidebar" aria-label="Abrir menú">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navbar -->
+  <nav class="navbar" aria-label="Navegación principal">
+    <div class="contenedor navbar-fila">
+      <button class="btn-categorias" id="btn-abrir-sidebar-2">
+        <i class="fa-solid fa-bars"></i>
+        <span>Explorar categorías</span>
+      </button>
+      <ul class="nav-menu">
+        <li><a href="#inicio" class="activo">Inicio</a></li>
+        <li><a href="#categorias">Categorías</a></li>
+        <li><a href="catalogo.html">Catálogo</a></li>
+        <li><a href="#nosotros">Nosotros</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+      <a href="#contacto" class="btn-contactar-nav">Contáctanos</a>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar" aria-label="Menú de categorías">
+    <div class="sidebar-header">
+      <strong>Categorías</strong>
+      <button class="sidebar-cerrar" id="btn-cerrar-sidebar" aria-label="Cerrar menú"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="sidebar-cat-lista" id="sidebar-cat-lista"></div>
+    <div class="sidebar-nav-general">
+      <a href="#inicio"><i class="fa-solid fa-house"></i><span>Inicio</span></a>
+      <a href="#nosotros"><i class="fa-solid fa-circle-info"></i><span>Nosotros</span></a>
+      <a href="#contacto"><i class="fa-solid fa-comment"></i><span>Contacto</span></a>
+    </div>
+    <div class="sidebar-ayuda">
+      <p>¿Necesitas ayuda para encontrar algo?</p>
+      <a href="#" id="sidebar-whatsapp" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Escríbenos</a>
+    </div>
+    <div class="sidebar-ubicacion">
+      <i class="fa-solid fa-location-dot"></i>
+      <div><strong>La Ceja, Antioquia</strong><br />Domicilios disponibles en el Oriente Antioqueño</div>
+    </div>
+  </aside>
+
+  <main id="contenido">
+    <!-- Hero -->
+    <section class="hero" id="inicio">
+      <div class="contenedor hero-grid">
+        <div>
+          <span class="eyebrow"><i class="fa-solid fa-pencil"></i> Catálogo digital</span>
+          <h1>Todo lo que necesitas para <span>estudiar, trabajar</span> y organizar tu día.</h1>
+          <p class="lead">En Mil Variedades encuentras papelería, útiles escolares y productos de aseo. Compra fácil desde cualquier dispositivo y contáctanos directo por WhatsApp.</p>
+          <div class="hero-botones">
+            <a href="catalogo.html" class="btn-primario">Ver catálogo <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="#nosotros" class="btn-secundario">Conócenos</a>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat"><h3 id="stat-productos">—</h3><span>Productos en catálogo</span></div>
+            <div class="hero-stat"><h3 id="stat-categorias">—</h3><span>Categorías</span></div>
+            <div class="hero-stat"><h3>100%</h3><span>Atención personalizada</span></div>
+          </div>
+        </div>
+
+ <div class="hero-visual">
+
+          <div class="hero-ilustracion" aria-hidden="true">
+            <img src="../assets/img/hero.jpg" alt="" class="foto-real" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="ilustracion-svg" style="display:none;">
+            <svg viewBox="0 0 200 180" fill="none">
+              <rect x="30" y="30" width="70" height="90" rx="6" fill="#D62828"/>
+              <rect x="40" y="45" width="50" height="4" rx="2" fill="#FDF6EC"/>
+              <rect x="40" y="58" width="50" height="4" rx="2" fill="#FDF6EC"/>
+              <rect x="40" y="71" width="30" height="4" rx="2" fill="#FDF6EC"/>
+              <rect x="105" y="55" width="16" height="80" rx="8" fill="#F4B400"/>
+              <polygon points="113,55 121,55 117,35" fill="#6b6157"/>
+              <circle cx="150" cy="90" r="30" fill="#2B6CB0" opacity="0.15"/>
+              <circle cx="150" cy="90" r="18" fill="#2B6CB0"/>
+            </svg>
+            </div>
+          </div>
+
+          <div class="tarjeta-flotante tf-1"><i class="fa-solid fa-box"></i><div><h4>Gran catálogo</h4><span>Nuevos productos cada semana</span></div></div>
+
+          <div class="tarjeta-flotante tf-2"><i class="fa-solid fa-truck-fast"></i><div><h4>Domicilios</h4><span>La Ceja y alrededores</span></div></div>
+
+        </div>
+
+      </div>
+
+    </section>
+    <!-- Categorías -->
+    <section class="seccion" id="categorias">
+      <div class="contenedor">
+        <div class="seccion-header" data-reveal>
+          <span class="eyebrow">Explora</span>
+          <h2>Nuestras Categorías</h2>
+          <p>Encuentra todo organizado para que sea mucho más fácil encontrar el producto que buscas.</p>
+        </div>
+        <div class="categorias-grid" id="lista-categorias">
+          <div class="estado-carga"><div class="spinner" aria-hidden="true"></div><p>Cargando categorías…</p></div>
+        </div>
+      </div>
+    </section>
+
+    <svg class="separador-onda" viewBox="0 0 1200 60" preserveAspectRatio="none" style="fill:#FFFFFF"><path d="M0,30 C300,60 900,0 1200,30 L1200,60 L0,60 Z"></path></svg>
+    <!-- Productos destacados -->
+    <section class="seccion seccion-alterna" id="destacados">
+      <div class="contenedor">
+        <div class="seccion-header" data-reveal>
+          <span class="eyebrow">Catálogo</span>
+          <h2>Productos Destacados</h2>
+          <p>Descubre nuestros productos disponibles ahora mismo, directo desde nuestro inventario.</p>
+        </div>
+        <div class="filtros-productos" id="filtros-productos">
+          <button class="filtro-btn activo" data-categoria="todos">Todos</button>
+        </div>
+        <div class="productos-grid" id="lista-productos">
+          <div class="estado-carga"><div class="spinner" aria-hidden="true"></div><p>Cargando catálogo…</p></div>
+        </div>
+        <div style="text-align:center; margin-top: var(--sp-4);">
+          <a href="catalogo.html" class="btn-secundario">Ver catálogo completo <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </div>
+    </section>
+
+    <svg class="separador-onda" viewBox="0 0 1200 60" preserveAspectRatio="none" style="fill:#FDF6EC"><path d="M0,30 C300,0 900,60 1200,30 L1200,60 L0,60 Z"></path></svg>
+    <!-- Promoción especial -->
+    <section class="seccion">
+      <div class="contenedor">
+        <div class="promo" data-reveal>
+          <div class="promo-texto">
+            <span class="eyebrow"><i class="fa-solid fa-tag"></i> Promoción especial</span>
+            <h2>Todo para tu estudio, oficina y hogar en un solo lugar.</h2>
+            <p>Aprovecha nuestras promociones y encuentra productos de excelente calidad al mejor precio.</p>
+            <a href="catalogo.html" class="btn-primario">Comprar ahora <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <div class="promo-visual">
+  <img src="../assets/img/FONDONEGRO.jpg" alt="Promoción especial Mil Variedades" class="foto-promo">
+</div>
+        </div>
+      </div>
+    </section>
+
+    <svg class="separador-onda" viewBox="0 0 1200 60" preserveAspectRatio="none" style="fill:#FFFFFF"><path d="M0,30 C300,60 900,0 1200,30 L1200,60 L0,60 Z"></path></svg>
+    <!-- Nosotros -->
+    <section class="seccion seccion-alterna" id="nosotros">
+      <div class="contenedor nosotros-grid">
+        <div class="nosotros-visual" aria-hidden="true" data-reveal>
+          <img src="../assets/img/nosotros.jpg" alt="" class="foto-real" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="ilustracion-svg" style="display:none;">
+          <svg viewBox="0 0 200 160" fill="none">
+            <rect x="10" y="10" width="180" height="140" rx="14" fill="#26211C"/>
+            <circle cx="55" cy="55" r="20" fill="#D62828"/>
+            <path d="M45 55a10 10 0 1 1 20 0" stroke="#FDF6EC" stroke-width="3" fill="none"/>
+            <rect x="90" y="42" width="85" height="9" rx="4.5" fill="#FDF6EC"/>
+            <rect x="90" y="60" width="65" height="6" rx="3" fill="#F4B400"/>
+            <rect x="30" y="100" width="140" height="6" rx="3" fill="#3a332c"/>
+            <rect x="30" y="115" width="100" height="6" rx="3" fill="#3a332c"/>
+            <circle cx="160" cy="120" r="16" fill="#2B6CB0"/>
+            <path d="M153 120l5 5 9-9" stroke="#FDF6EC" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          </div>
+        </div>
+        <div data-reveal>
+          <span class="eyebrow">Nuestra historia</span>
+          <h2>Sobre Nosotros</h2>
+          <p>Mil Variedades es una papelería local en La Ceja, Antioquia. Llevamos años ayudando a estudiantes, oficinas y familias a encontrar justo lo que necesitan, con atención cercana y precios justos.</p>
+          <div class="nosotros-lista">
+            <div class="nosotros-item"><i class="fa-solid fa-circle-check"></i><div><strong>Atención cercana</strong><span>Te respondemos directo por WhatsApp, sin intermediarios.</span></div></div>
+            <div class="nosotros-item"><i class="fa-solid fa-circle-check"></i><div><strong>Catálogo siempre actualizado</strong><span>Gestionamos el inventario para que veas lo que sí hay disponible.</span></div></div>
+            <div class="nosotros-item"><i class="fa-solid fa-circle-check"></i><div><strong>Domicilios en la zona</strong><span>Entregas en La Ceja y el Oriente Antioqueño.</span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <svg class="separador-onda" viewBox="0 0 1200 60" preserveAspectRatio="none" style="fill:#FDF6EC"><path d="M0,30 C300,0 900,60 1200,30 L1200,60 L0,60 Z"></path></svg>
+    <!-- Marcas reconocidas -->
+    <section class="seccion">
+      <div class="contenedor">
+        <div class="seccion-header" data-reveal>
+          <span class="eyebrow">Confianza</span>
+          <h2>Trabajamos con Marcas Reconocidas</h2>
+          <p>En Mil Variedades ofrecemos productos de marcas reconocidas por su calidad y confianza.</p>
+        </div>
+        <div class="marcas-fila" data-reveal>
+          <div class="marca-logo">
+            <img src="../assets/img/marcas/norma.png" alt="Norma" onerror="this.parentElement.classList.add('sin-logo'); this.remove();">
+            <span class="marca-nombre-fallback">Norma</span>
+          </div>
+          <div class="marca-logo">
+            <img src="../assets/img/marcas/faber-castell.png" alt="Faber Castell" onerror="this.parentElement.classList.add('sin-logo'); this.remove();">
+            <span class="marca-nombre-fallback">Faber Castell</span>
+          </div>
+          <div class="marca-logo">
+            <img src="../assets/img/marcas/stabilo.png" alt="Stabilo" onerror="this.parentElement.classList.add('sin-logo'); this.remove();">
+            <span class="marca-nombre-fallback">Stabilo</span>
+          </div>
+          <div class="marca-logo">
+            <img src="../assets/img/marcas/pritt.png" alt="Pritt" onerror="this.parentElement.classList.add('sin-logo'); this.remove();">
+            <span class="marca-nombre-fallback">Pritt</span>
+          </div>
+          <div class="marca-logo">
+            <img src="../assets/img/marcas/fab.png" alt="Fab" onerror="this.parentElement.classList.add('sin-logo'); this.remove();">
+            <span class="marca-nombre-fallback">Fab</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <svg class="separador-onda" viewBox="0 0 1200 60" preserveAspectRatio="none" style="fill:#FFFFFF"><path d="M0,30 C300,60 900,0 1200,30 L1200,60 L0,60 Z"></path></svg>
+    <!-- Por qué elegirnos -->
+    <section class="seccion seccion-alterna">
+      <div class="contenedor">
+        <div class="seccion-header" data-reveal>
+          <span class="eyebrow">Ventajas</span>
+          <h2>¿Por qué elegirnos?</h2>
+        </div>
+        <div class="elegirnos-grid">
+          <div class="elegirnos-card" data-reveal>
+            <span class="beneficio-icono"><i class="fa-solid fa-truck-fast"></i></span>
+            <h3>Envíos rápidos</h3>
+            <p>Entregas seguras en todo el Oriente Antioqueño.</p>
+          </div>
+          <div class="elegirnos-card" data-reveal>
+            <span class="beneficio-icono"><i class="fa-solid fa-award"></i></span>
+            <h3>Calidad garantizada</h3>
+            <p>Seleccionamos marcas confiables y de buen precio.</p>
+          </div>
+          <div class="elegirnos-card" data-reveal>
+            <span class="beneficio-icono"><i class="fa-brands fa-whatsapp"></i></span>
+            <h3>Atención por WhatsApp</h3>
+            <p>Comunicación directa, rápida y sin filas.</p>
+          </div>
+          <div class="elegirnos-card" data-reveal>
+            <span class="beneficio-icono"><i class="fa-solid fa-shield-halved"></i></span>
+            <h3>Negocio local</h3>
+            <p>Compra con confianza a un negocio de tu comunidad.</p>
+          </div>
+          <div class="elegirnos-card" data-reveal>
+            <span class="beneficio-icono"><i class="fa-solid fa-box-open"></i></span>
+            <h3>Catálogo variado</h3>
+            <p>Papelería, escolar, oficina y aseo, todo en un solo lugar.</p>
+          </div>
+          <div class="elegirnos-card" data-reveal>
+            <span class="beneficio-icono"><i class="fa-solid fa-heart"></i></span>
+            <h3>Trato cercano</h3>
+            <p>Te asesoramos para que encuentres justo lo que buscas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ubicación / Mapa -->
+    <section class="seccion seccion-alterna">
+      <div class="contenedor">
+        <div class="seccion-header" data-reveal>
+          <span class="eyebrow">Visítanos</span>
+          <h2>Nuestra ubicación</h2>
+        </div>
+        <div class="mapa-grid">
+          <div class="mapa-embed" data-reveal>
+            <iframe
+              src="https://www.google.com/maps?q=La+Ceja,+Antioquia,+Colombia&output=embed"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              title="Ubicación de Mil Variedades en La Ceja, Antioquia">
+            </iframe>
+          </div>
+          <div class="mapa-info" data-reveal>
+            <div class="contacto-card"><i class="fa-solid fa-location-dot"></i><div><h3>Dirección</h3><p>La Ceja, Antioquia</p></div></div>
+            <div class="contacto-card"><i class="fa-solid fa-clock"></i><div><h3>Horario</h3><p>Lun - Sáb, 8:00 a.m. - 7:00 p.m.</p></div></div>
+            <div class="contacto-card"><i class="fa-brands fa-whatsapp"></i><div><h3>WhatsApp</h3><p id="mapa-numero">Cargando…</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Banner WhatsApp + contacto -->
+    <section class="seccion" id="contacto" style="padding-top: 0;">
+      <div class="contenedor">
+        <div class="whatsapp-banner" data-reveal>
+          <div>
+            <h2>¿Necesitas ayuda o hacer un pedido?</h2>
+            <p>Escríbenos por WhatsApp y te atendemos al instante.</p>
+          </div>
+          <a href="#" id="btn-whatsapp-banner" class="btn-blanco" target="_blank" rel="noopener">
+            <i class="fa-brands fa-whatsapp"></i> Contactar por WhatsApp
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="contenedor">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="footer-logo">Mil <span>Variedades</span></div>
+          <p>Tu tienda de confianza para artículos escolares, papelería, oficina, limpieza y mucho más.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" id="footer-whatsapp" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Enlaces</h4>
+          <ul>
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#categorias">Categorías</a></li>
+            <li><a href="catalogo.html">Catálogo</a></li>
+            <li><a href="#nosotros">Nosotros</a></li>
+            <li><a href="#contacto">Contacto</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Servicios</h4>
+          <ul>
+            <li>Papelería</li>
+            <li>Escolar</li>
+            <li>Oficina</li>
+            <li>Limpieza</li>
+            <li>Domicilios</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Información</h4>
+          <ul>
+            <li>La Ceja - Antioquia</li>
+            <li id="footer-numero">—</li>
+            <li>contacto@milvariedades.com</li>
+            <li>Lun - Sáb, 8am - 7pm</li>
+          </ul>
+        </div>
+      </div>
+      <p class="footer-copy">
+        © 2026 Mil Variedades. Todos los derechos reservados.
+        · <a href="login.html" class="footer-acceso-admin">Acceso administrativo</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Modal de detalle de producto -->
+  <div class="modal-overlay" id="modal-overlay"></div>
+  <div class="modal-producto" id="modal-producto" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <button class="modal-cerrar" id="modal-cerrar" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-imagen" id="modal-imagen"></div>
+    <div class="modal-info">
+      <div class="modal-info-top">
+        <span class="producto-categoria" id="modal-categoria"></span>
+        <span class="modal-disponible"><i class="fa-solid fa-circle"></i> Disponible</span>
+      </div>
+      <h2 id="modal-titulo"></h2>
+      <p class="modal-descripcion" id="modal-descripcion"></p>
+      <div class="modal-precio-wrap">
+        <span class="modal-precio-label">Precio</span>
+        <span class="modal-precio" id="modal-precio"></span>
+      </div>
+      <div class="modal-cantidad-wrap">
+        <span>Cantidad</span>
+        <div class="modal-cantidad-stepper">
+          <button type="button" id="modal-cantidad-menos" aria-label="Disminuir cantidad">−</button>
+          <span id="modal-cantidad-valor">1</span>
+          <button type="button" id="modal-cantidad-mas" aria-label="Aumentar cantidad">+</button>
+        </div>
+      </div>
+      <button type="button" class="btn-agregar-pedido" id="btn-agregar-pedido">
+        <i class="fa-solid fa-cart-plus"></i> Agregar al pedido
+      </button>
+      <a href="#" id="modal-whatsapp" class="btn-comprar-wsp" target="_blank" rel="noopener">
+        <i class="fa-brands fa-whatsapp"></i> Preguntar por WhatsApp
+      </a>
+      <button class="modal-compartir" id="modal-compartir">
+        <i class="fa-solid fa-share-nodes"></i> Compartir este producto
+      </button>
+    </div>
+  </div>
+
+  <!-- Carrito / armador de pedido por WhatsApp -->
+  <div class="carrito-overlay" id="carrito-overlay"></div>
+  <aside class="carrito-panel" id="carrito-panel" aria-label="Tu pedido">
+    <div class="carrito-header">
+      <strong><i class="fa-solid fa-cart-shopping"></i> Tu pedido</strong>
+      <button class="carrito-cerrar" id="carrito-cerrar" aria-label="Cerrar pedido"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="carrito-lista" id="carrito-lista"></div>
+    <div class="carrito-footer" id="carrito-footer" style="display:none;">
+      <div class="carrito-total-fila">
+        <span>Total</span>
+        <span id="carrito-total">$0</span>
+      </div>
+      <a href="#" id="btn-finalizar-pedido" class="btn-finalizar-pedido" target="_blank" rel="noopener">
+        <i class="fa-brands fa-whatsapp"></i> Finalizar pedido por WhatsApp
+      </a>
+      <button class="btn-vaciar-carrito" id="btn-vaciar-carrito" type="button">Vaciar pedido</button>
+    </div>
+  </aside>
+
+  <a href="#" id="whatsapp-flotante" class="whatsapp-flotante" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a>
+  <button class="btn-scroll-top" id="btn-scroll-top" aria-label="Volver arriba"><i class="fa-solid fa-arrow-up"></i></button>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/carrito.js"></script>
+</body>
+</html>

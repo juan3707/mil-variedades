@@ -1,0 +1,11 @@
+Pon aqui los logos de las marcas, con estos nombres EXACTOS:
+
+norma.png
+faber-castell.png
+stabilo.png
+pritt.png
+fab.png
+
+Si el archivo no existe todavia, la pagina muestra el nombre en texto
+mientras tanto (no se rompe nada). Apenas pongas el archivo con el
+nombre correcto, el logo real aparece solo, sin tocar codigo.

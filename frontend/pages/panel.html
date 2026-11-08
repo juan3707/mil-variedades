@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel administrativo | Mil Variedades</title>
+  <meta name="robots" content="noindex, nofollow" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+</head>
+<body class="panel-body">
+
+  <header class="panel-header">
+  <a href="index.html" class="logo">
+  <span class="logo-icono">
+    <img src="../assets/img/LOGO_MINIMALISTA.jpg" alt="Mil Variedades" class="logo-img">
+  </span>
+  <span class="logo-texto">
+    <h1>Mil Variedades</h1>
+    <span>Panel administrativo</span>
+  </span>
+</a>
+    <div class="panel-header-usuario">
+      <div class="panel-usuario-info">
+        <strong id="panel-usuario-nombre">—</strong>
+        <span class="panel-usuario-rol" id="panel-usuario-rol">—</span>
+      </div>
+      <button class="btn-secundario panel-btn-salir" id="btn-cerrar-sesion" type="button">
+        <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+      </button>
+    </div>
+  </header>
+
+  <nav class="panel-tabs">
+    <button class="panel-tab activo" id="tab-productos" type="button">
+      <i class="fa-solid fa-box"></i> Productos
+    </button>
+    <button class="panel-tab" id="tab-categorias" type="button">
+      <i class="fa-solid fa-tags"></i> Categorías
+    </button>
+  </nav>
+
+  <main class="panel-contenido">
+    <!-- ---------- Sección Productos ---------- -->
+    <section id="seccion-productos" class="panel-seccion">
+      <div class="panel-toolbar">
+        <span class="panel-contador" id="contador-productos">Cargando productos…</span>
+        <button class="btn-primario" id="btn-nuevo-producto" type="button">
+          <i class="fa-solid fa-plus"></i> Nuevo producto
+        </button>
+      </div>
+
+      <div class="panel-tabla-wrap">
+        <table class="panel-tabla">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th>Precio</th>
+              <th>Stock</th>
+              <th>Fotos</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-productos-body">
+            <tr><td colspan="6" class="panel-tabla-vacia">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <nav class="paginacion" id="paginacion-productos" aria-label="Paginación de productos"></nav>
+    </section>
+
+    <!-- ---------- Sección Categorías ---------- -->
+    <section id="seccion-categorias" class="panel-seccion" style="display:none;">
+      <div class="panel-toolbar">
+        <span class="panel-contador" id="contador-categorias">Cargando categorías…</span>
+        <button class="btn-primario" id="btn-nueva-categoria" type="button">
+          <i class="fa-solid fa-plus"></i> Nueva categoría
+        </button>
+      </div>
+
+      <div class="panel-tabla-wrap">
+        <table class="panel-tabla">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-categorias-body">
+            <tr><td colspan="3" class="panel-tabla-vacia">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- ---------- Modal: crear/editar producto ---------- -->
+  <div class="panel-modal-overlay" id="modal-producto-overlay"></div>
+  <div class="panel-modal" id="modal-producto" role="dialog" aria-modal="true" aria-labelledby="modal-producto-titulo">
+    <div class="panel-modal-header">
+      <h2 id="modal-producto-titulo">Nuevo producto</h2>
+      <button class="panel-modal-cerrar" id="modal-producto-cerrar" type="button" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="form-producto" class="panel-form">
+      <input type="hidden" id="producto-id" value="" />
+
+      <div class="panel-campo">
+        <label for="producto-nombre">Nombre</label>
+        <input type="text" id="producto-nombre" required minlength="3" maxlength="150" />
+      </div>
+
+      <div class="panel-campo">
+        <label for="producto-descripcion">Descripción</label>
+        <textarea id="producto-descripcion" rows="3"></textarea>
+      </div>
+
+      <div class="panel-campo-fila">
+        <div class="panel-campo">
+          <label for="producto-precio">Precio</label>
+          <input type="number" id="producto-precio" required min="0" step="1" />
+        </div>
+        <div class="panel-campo">
+          <label for="producto-categoria">Categoría</label>
+          <select id="producto-categoria" required></select>
+        </div>
+      </div>
+
+      <div class="panel-campo" id="campo-stock" style="display:none;">
+        <label for="producto-stock">Stock disponible</label>
+        <input type="number" id="producto-stock" min="0" step="1" />
+      </div>
+
+      <div class="panel-campo" id="campo-imagenes" style="display:none;">
+        <label>Fotos del producto</label>
+        <div class="panel-imagenes-lista" id="panel-imagenes-lista"></div>
+        <div class="panel-imagen-subir">
+          <input type="file" id="producto-imagen-archivo" accept="image/*" />
+          <button type="button" class="btn-secundario" id="btn-subir-imagen">
+            <i class="fa-solid fa-upload"></i> Subir foto
+          </button>
+        </div>
+        <p class="panel-imagenes-nota">La primera foto de la lista es la que se muestra en el catálogo.</p>
+      </div>
+
+      <p class="login-error" id="producto-error" role="alert" style="display:none;"></p>
+
+      <div class="panel-form-acciones">
+        <button type="button" class="btn-secundario" id="btn-cancelar-producto">Cancelar</button>
+        <button type="submit" class="btn-primario" id="btn-guardar-producto">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ---------- Modal: crear/editar categoría ---------- -->
+  <div class="panel-modal-overlay" id="modal-categoria-overlay"></div>
+  <div class="panel-modal" id="modal-categoria" role="dialog" aria-modal="true" aria-labelledby="modal-categoria-titulo">
+    <div class="panel-modal-header">
+      <h2 id="modal-categoria-titulo">Nueva categoría</h2>
+      <button class="panel-modal-cerrar" id="modal-categoria-cerrar" type="button" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="form-categoria" class="panel-form">
+      <input type="hidden" id="categoria-id" value="" />
+
+      <div class="panel-campo">
+        <label for="categoria-nombre">Nombre</label>
+        <input type="text" id="categoria-nombre" required minlength="2" maxlength="100" />
+      </div>
+
+      <div class="panel-campo">
+        <label for="categoria-descripcion">Descripción</label>
+        <textarea id="categoria-descripcion" rows="3"></textarea>
+      </div>
+
+      <p class="login-error" id="categoria-error" role="alert" style="display:none;"></p>
+
+      <div class="panel-form-acciones">
+        <button type="button" class="btn-secundario" id="btn-cancelar-categoria">Cancelar</button>
+        <button type="submit" class="btn-primario" id="btn-guardar-categoria">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="../assets/js/api.js"></script>
+  <script src="../assets/js/panel.js"></script>
+</body>
+</html>
