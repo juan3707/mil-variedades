@@ -3,7 +3,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-app.use(cors());
 const helmet = require('helmet');
 const path = require('path');
 const routes = require('./routes');
@@ -12,6 +11,13 @@ const { generalLimiter } = require('./middlewares/rateLimiter');
 
 const app = express();
 
+app.use(cors());
+app.use(helmet());
+app.use(generalLimiter);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Tus rutas y middlewares restantes van aquí debajo...
 // --- Seguridad transversal (Agente 4) ---
 
 // Helmet aplica un conjunto de headers de seguridad HTTP "de fábrica".
