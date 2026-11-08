@@ -14,7 +14,11 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   charset: 'utf8mb4',
+  ssl: { 
+    rejectUnauthorized: false 
+  }
 });
+
 
 // Sin este listener, un error de conexión perdida en una conexión INACTIVA
 // del pool (ej. el servidor MySQL la cerró por inactividad, un reinicio de
