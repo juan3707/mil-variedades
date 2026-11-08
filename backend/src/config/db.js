@@ -5,6 +5,13 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
+console.log('--- DIAGNÓSTICO DE CREDENCIALES DE BD ---');
+console.log('HOST:', process.env.DB_HOST);
+console.log('PORT:', process.env.DB_PORT);
+console.log('USER:', process.env.DB_USER);
+console.log('DATABASE:', process.env.DB_NAME);
+console.log('PASSWORD SET:', process.env.DB_PASSWORD ? 'Sí (configurada)' : 'No (vacía)');
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
