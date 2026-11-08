@@ -285,7 +285,7 @@ function crearTarjetaProducto(producto) {
   imgWrap.className = "producto-img";
   if (producto.imagen_portada) {
     const img = document.createElement("img");
-    img.src = `http://localhost:4000${producto.imagen_portada}`;
+  img.src = `https://mil-variedades.onrender.com${producto.imagen_portada}`;
     img.alt = producto.nombre;
     img.loading = "lazy";
     imgWrap.appendChild(img);
@@ -514,7 +514,7 @@ async function abrirModalProducto(idProducto) {
       imagenWrap.appendChild(icono);
     } else {
       const imgPrincipal = document.createElement("img");
-      imgPrincipal.src = `http://localhost:4000${imagenes[0].url_imagen}`;
+      imgPrincipal.src = `https://mil-variedades.onrender.com${imagenes[0].url_imagen}`;
       imgPrincipal.alt = producto.nombre;
       imagenWrap.appendChild(imgPrincipal);
 
@@ -528,7 +528,7 @@ async function abrirModalProducto(idProducto) {
           punto.className = indice === 0 ? "activo" : "";
           punto.setAttribute("aria-label", `Ver foto ${indice + 1}`);
           punto.addEventListener("click", () => {
-            imgPrincipal.src = `http://localhost:4000${imagen.url_imagen}`;
+         imgPrincipal.src = `https://mil-variedades.onrender.com${imagen.url_imagen}`;
             dots.querySelectorAll("button").forEach((b) => b.classList.remove("activo"));
             punto.classList.add("activo");
           });

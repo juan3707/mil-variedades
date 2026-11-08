@@ -1,6 +1,6 @@
 // Un solo lugar para saber dónde vive el backend. Cuando despleguemos
 // en producción (Agente 8), esta es la ÚNICA línea que hay que cambiar.
-const API_BASE_URL = "http://localhost:4000/api";
+const API_BASE_URL = "https://mil-variedades.onrender.com/api";
 
 /**
  * Wrapper de fetch: arma la URL completa, parsea el JSON, y lanza un
