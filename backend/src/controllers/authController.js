@@ -75,6 +75,9 @@ async function login(req, res, next) {
 
 module.exports = { login };
 
+// Ejemplo si tu consulta de MySQL devuelve un arreglo llamado 'results':
+const usuario = results[0]; 
+
 const token = jwt.sign(
   { id: usuario.id, rol: usuario.rol },
   process.env.JWT_SECRET,
