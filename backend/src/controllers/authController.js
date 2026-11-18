@@ -3,7 +3,12 @@
 // Administrador va a usar en las siguientes peticiones para demostrar
 // quién es, sin tener que mandar la contraseña cada vez.
 
-const bcrypt = require('bcrypt');
+let bcrypt;
+try {
+  bcrypt = require('bcryptjs');
+} catch (_e) {
+  bcrypt = require('bcrypt');
+}
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { ok, fail } = require('../utils/response');

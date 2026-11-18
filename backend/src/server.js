@@ -1,10 +1,10 @@
 // Punto de entrada del backend.
 
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const path = require('path');
 const routes = require('./routes');
 const errorHandler = require('./middlewares/errorHandler');
 const { generalLimiter } = require('./middlewares/rateLimiter');
@@ -62,6 +62,7 @@ app.use(
     origin: (origin, callback) => {
       if (
         !origin ||
+        (origin === "null" && process.env.NODE_ENV !== "production") ||
         origenesPermitidos.includes(origin) ||
         origin.endsWith(".vercel.app")
       ) {

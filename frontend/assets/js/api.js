@@ -1,7 +1,13 @@
 // Resolución dinámica del origen del backend según el entorno (Local vs Vercel):
-const ES_LOCAL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const ES_LOCAL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  window.location.protocol === "file:" ||
+  !window.location.hostname;
+
 const API_BASE_URL = ES_LOCAL ? "http://localhost:4000" : "";
 const API_URL = `${API_BASE_URL}/api`;
+window.API_BASE_URL = API_BASE_URL;
 
 function resolverUrlRecurso(rutaRelativa) {
   if (!rutaRelativa) return "";

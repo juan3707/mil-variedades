@@ -2,8 +2,9 @@
 // de abrir/cerrar una conexión nueva por cada consulta — es más rápido y es
 // la práctica estándar en Node + Express.
 
+const path = require('path');
 const mysql = require('mysql2/promise');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
 console.log('--- DIAGNÓSTICO DE CREDENCIALES DE BD ---');
 console.log('HOST:', process.env.DB_HOST);
