@@ -49,13 +49,28 @@ function manejarErrorSesion(error) {
   return mensaje;
 }
 
+function normalizarTextoUTF8(texto) {
+  if (!texto) return "";
+  return String(texto)
+    .replace(/├▒|Ã±|\uFFFD/g, "ñ")
+    .replace(/├Ñ|Ã‘/g, "Ñ")
+    .replace(/├¡|Ã¡/g, "á")
+    .replace(/├©|Ã©/g, "é")
+    .replace(/├í|Ã­/g, "í")
+    .replace(/├³|Ã³/g, "ó")
+    .replace(/├º|Ãº/g, "ú");
+}
+
 function mostrarUsuarioActual() {
   const usuario = obtenerUsuarioActual();
   const nombreEl = document.getElementById("panel-usuario-nombre");
   const rolEl = document.getElementById("panel-usuario-rol");
   if (!usuario) return;
-  nombreEl.textContent = usuario.nombre || usuario.correo || "Usuario";
-  rolEl.textContent = usuario.rol === "super_admin" ? "Super Administrador" : "Administrador";
+  const esSuperAdmin = usuario.rol === "super_admin";
+  nombreEl.textContent = esSuperAdmin
+    ? "Paola Sosa"
+    : normalizarTextoUTF8(usuario.nombre || usuario.correo || "Paola Sosa");
+  rolEl.textContent = esSuperAdmin ? "Super Administradora" : "Administrador";
 }
 
 function activarCierreSesion() {
@@ -116,6 +131,10 @@ function renderizarTablaCategorias() {
 
   document.getElementById("contador-categorias").textContent =
     `${categoriasCargadas.length} categoría${categoriasCargadas.length === 1 ? "" : "s"}`;
+  const resumenCat = document.getElementById("resumen-pie-categorias");
+  if (resumenCat) {
+    resumenCat.textContent = `Mostrando ${categoriasCargadas.length} de ${categoriasCargadas.length} registros`;
+  }
 
   if (categoriasCargadas.length === 0) {
     mostrarErrorTabla("tabla-categorias-body", 3, "Todavía no hay categorías.");
@@ -126,19 +145,27 @@ function renderizarTablaCategorias() {
     const fila = document.createElement("tr");
 
     const tdNombre = document.createElement("td");
-    tdNombre.textContent = categoria.nombre;
+    const nombreStrong = document.createElement("strong");
+    nombreStrong.className = "panel-cat-nombre";
+    nombreStrong.textContent = categoria.nombre;
+    tdNombre.appendChild(nombreStrong);
     fila.appendChild(tdNombre);
 
     const tdDescripcion = document.createElement("td");
-    tdDescripcion.textContent = categoria.descripcion || "—";
+    const descSpan = document.createElement("span");
+    descSpan.className = "panel-cat-desc";
+    descSpan.textContent = categoria.descripcion || "—";
+    tdDescripcion.appendChild(descSpan);
     fila.appendChild(tdDescripcion);
 
     const tdAcciones = document.createElement("td");
-    tdAcciones.className = "panel-tabla-acciones";
-    tdAcciones.appendChild(crearBotonAccion("fa-pen", "Editar", () => abrirModalCategoria("editar", categoria)));
-    tdAcciones.appendChild(
+    const accionesWrap = document.createElement("div");
+    accionesWrap.className = "panel-tabla-acciones";
+    accionesWrap.appendChild(crearBotonAccion("fa-pen", "Editar", () => abrirModalCategoria("editar", categoria)));
+    accionesWrap.appendChild(
       crearBotonAccion("fa-trash", "Eliminar", () => eliminarCategoriaConfirmar(categoria), true)
     );
+    tdAcciones.appendChild(accionesWrap);
     fila.appendChild(tdAcciones);
 
     cuerpo.appendChild(fila);
@@ -230,6 +257,12 @@ async function cargarProductos() {
 
     document.getElementById("contador-productos").textContent =
       `${paginacionProductos.total_productos} producto${paginacionProductos.total_productos === 1 ? "" : "s"}`;
+    const resumenProd = document.getElementById("resumen-pie-productos");
+    if (resumenProd) {
+      const inicio = productos.length > 0 ? (paginacionProductos.pagina - 1) * LIMITE_PRODUCTOS_PANEL + 1 : 0;
+      const fin = inicio > 0 ? inicio + productos.length - 1 : 0;
+      resumenProd.textContent = `Mostrando ${inicio} a ${fin} de ${paginacionProductos.total_productos} resultados`;
+    }
 
     renderizarTablaProductos();
     renderizarPaginacionProductos();
@@ -237,6 +270,14 @@ async function cargarProductos() {
     const mensaje = manejarErrorSesion(error);
     if (mensaje) mostrarErrorTabla("tabla-productos-body", 6, mensaje);
   }
+}
+
+function claseTonoCategoria(nombreCat) {
+  const clave = (nombreCat || "").toLowerCase();
+  if (clave.includes("papel") || clave.includes("oficina")) return " cat-tono-1";
+  if (clave.includes("escolar") || clave.includes("util") || clave.includes("útil")) return " cat-tono-2";
+  if (clave.includes("aseo") || clave.includes("limpieza")) return " cat-tono-3";
+  return "";
 }
 
 function renderizarTablaProductos() {
@@ -252,33 +293,75 @@ function renderizarTablaProductos() {
     const fila = document.createElement("tr");
 
     const tdNombre = document.createElement("td");
-    tdNombre.textContent = producto.nombre;
+    const celdaProd = document.createElement("div");
+    celdaProd.className = "panel-prod-celda";
+    const nombreStrong = document.createElement("strong");
+    nombreStrong.className = "panel-prod-nombre";
+    nombreStrong.textContent = producto.nombre;
+    celdaProd.appendChild(nombreStrong);
+    if (producto.descripcion) {
+      const descSpan = document.createElement("span");
+      descSpan.className = "panel-prod-desc";
+      descSpan.textContent = producto.descripcion;
+      celdaProd.appendChild(descSpan);
+    }
+    tdNombre.appendChild(celdaProd);
     fila.appendChild(tdNombre);
 
     const tdCategoria = document.createElement("td");
-    tdCategoria.textContent = producto.categoria;
+    const badgeCat = document.createElement("span");
+    badgeCat.className = "panel-badge-categoria" + claseTonoCategoria(producto.categoria);
+    badgeCat.textContent = producto.categoria || "General";
+    tdCategoria.appendChild(badgeCat);
     fila.appendChild(tdCategoria);
 
     const tdPrecio = document.createElement("td");
-    tdPrecio.textContent = formateadorPrecio.format(Number(producto.precio));
+    const precioStrong = document.createElement("strong");
+    precioStrong.className = "panel-prod-precio";
+    precioStrong.textContent = formateadorPrecio.format(Number(producto.precio));
+    tdPrecio.appendChild(precioStrong);
     fila.appendChild(tdPrecio);
 
     const tdStock = document.createElement("td");
-    tdStock.textContent = producto.stock !== undefined ? producto.stock : "—";
+    const stockSpan = document.createElement("span");
+    if (producto.stock === undefined || producto.stock === null) {
+      stockSpan.className = "panel-prod-stock";
+      stockSpan.textContent = "—";
+    } else if (Number(producto.stock) > 0) {
+      stockSpan.className = "panel-badge-foto con-foto";
+      stockSpan.textContent = `${producto.stock} uds`;
+    } else {
+      stockSpan.className = "panel-badge-foto stock-agotado";
+      stockSpan.textContent = "0 (Agotado)";
+    }
+    tdStock.appendChild(stockSpan);
     fila.appendChild(tdStock);
 
     const tdFotos = document.createElement("td");
-    tdFotos.textContent = producto.imagen_portada ? "Sí" : "Sin foto";
+    const badgeFoto = document.createElement("span");
+    if (producto.imagen_portada) {
+      badgeFoto.className = "panel-badge-foto con-foto";
+      const iconoFoto = document.createElement("i");
+      iconoFoto.className = "fa-regular fa-image";
+      badgeFoto.appendChild(iconoFoto);
+      badgeFoto.appendChild(document.createTextNode(" Sí"));
+    } else {
+      badgeFoto.className = "panel-badge-foto sin-foto";
+      badgeFoto.textContent = "Sin foto";
+    }
+    tdFotos.appendChild(badgeFoto);
     fila.appendChild(tdFotos);
 
     const tdAcciones = document.createElement("td");
-    tdAcciones.className = "panel-tabla-acciones";
-    tdAcciones.appendChild(
+    const accionesWrap = document.createElement("div");
+    accionesWrap.className = "panel-tabla-acciones";
+    accionesWrap.appendChild(
       crearBotonAccion("fa-pen", "Editar", () => abrirModalProductoEditar(producto.id_producto))
     );
-    tdAcciones.appendChild(
+    accionesWrap.appendChild(
       crearBotonAccion("fa-trash", "Eliminar", () => eliminarProductoConfirmar(producto), true)
     );
+    tdAcciones.appendChild(accionesWrap);
     fila.appendChild(tdAcciones);
 
     cuerpo.appendChild(fila);
@@ -289,14 +372,14 @@ function renderizarPaginacionProductos() {
   const contenedor = document.getElementById("paginacion-productos");
   contenedor.innerHTML = "";
 
-  const { pagina, total_paginas: totalPaginas } = paginacionProductos;
-  if (totalPaginas <= 1) return;
+  const pagina = paginacionProductos.pagina || 1;
+  const totalPaginas = Math.max(1, paginacionProductos.total_paginas || 1);
 
   const btnAnterior = document.createElement("button");
   btnAnterior.type = "button";
   btnAnterior.className = "paginacion-flecha";
   btnAnterior.disabled = pagina <= 1;
-  btnAnterior.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+  btnAnterior.textContent = "Anterior";
   btnAnterior.addEventListener("click", () => irAPaginaProductos(pagina - 1));
   contenedor.appendChild(btnAnterior);
 
@@ -313,7 +396,7 @@ function renderizarPaginacionProductos() {
   btnSiguiente.type = "button";
   btnSiguiente.className = "paginacion-flecha";
   btnSiguiente.disabled = pagina >= totalPaginas;
-  btnSiguiente.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+  btnSiguiente.textContent = "Siguiente";
   btnSiguiente.addEventListener("click", () => irAPaginaProductos(pagina + 1));
   contenedor.appendChild(btnSiguiente);
 }
@@ -406,7 +489,7 @@ function renderizarImagenesModal(imagenes) {
     item.className = "panel-imagen-item";
 
     const img = document.createElement("img");
-    img.src = `http://localhost:4000${imagen.url_imagen}`;
+    img.src = resolverUrlRecurso(imagen.url_imagen);
     img.alt = "";
     item.appendChild(img);
 

@@ -34,26 +34,44 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", 'data:'], // imágenes propias + las que sirve este mismo backend
-      scriptSrc: ["'self'", 'https://cdn.jsdelivr.net'], // Bootstrap 5 JS por CDN
-      styleSrc: ["'self'", 'https://cdn.jsdelivr.net', 'https://fonts.googleapis.com', "'unsafe-inline'"],
-      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-      connectSrc: ["'self'"], // el frontend solo puede llamar a esta misma API
+      imgSrc: ["'self'", 'data:', 'https:'],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://accounts.google.com'],
+      styleSrc: [
+        "'self'",
+        'https://cdn.jsdelivr.net',
+        'https://cdnjs.cloudflare.com',
+        'https://fonts.googleapis.com',
+        'https://accounts.google.com',
+        "'unsafe-inline'",
+      ],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+      frameSrc: ["'self'", 'https://www.google.com', 'https://accounts.google.com'],
+      connectSrc: ["'self'", 'https://accounts.google.com'],
     },
   })
 );
 
-// NOTA IMPORTANTE: en desarrollo, el frontend corre en Live Server
-// (otro puerto/origen), así que esta CSP hoy solo protege las
-// respuestas de ESTA API. Cuando en el Agente 8 despleguemos con Nginx
-// sirviendo frontend y backend bajo el mismo dominio, esta misma CSP
-// pasará a proteger también las páginas HTML reales.
+// CORS multi-puerto y compatible con Vercel
+const origenesPermitidos = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
-// CORS universal y flexible para producción y desarrollo
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        origenesPermitidos.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error("No permitido por CORS"));
+    },
+    credentials: true,
+  })
+);
 
 app.use(generalLimiter);
 
@@ -63,14 +81,24 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   }
-})); 
+}));
+
+// Servir archivos estáticos del frontend en despliegue unificado o local
+const frontendPath = path.join(__dirname, '..', '..', 'frontend');
+app.use('/assets', express.static(path.join(frontendPath, 'assets')));
+app.use('/pages', express.static(path.join(frontendPath, 'pages')));
+app.use(express.static(path.join(frontendPath, 'pages')));
 
 app.use('/api', routes);
 
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(frontendPath, 'pages', 'index.html'));
+});
+
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`Prueba: http://localhost:${PORT}/api/health`);
-});
+if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => console.log(`Servidor local en puerto ${PORT}`));
+}
+module.exports = app;

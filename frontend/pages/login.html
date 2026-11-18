@@ -3,56 +3,705 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Iniciar sesión | Mil Variedades</title>
-  <meta name="description" content="Acceso administrativo de Mil Variedades." />
+  <title>Iniciar sesión | Mil Variedades — La Ceja</title>
+  <meta name="description" content="Inicia sesión o crea tu cuenta en Mil Variedades La Ceja para gestionar tus pedidos, listas escolares y suministros de oficina." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 
   <link rel="stylesheet" href="../assets/css/styles.css" />
 </head>
-<body class="login-body">
+<body class="auth-body">
 
-  <main class="login-wrap">
-    <div class="login-card">
-    <a href="index.html" class="logo login-logo">
-  <span class="logo-icono">
-    <img src="../assets/img/LOGO_MINIMALISTA.jpg" alt="Mil Variedades" class="logo-img">
-  </span>
-  <span class="logo-texto">
-    <h1>Mil Variedades</h1>
-    <span>La Ceja</span>
-  </span>
-</a>
+  <!-- Barra superior institucional -->
+  <header class="auth-topbar">
+    <div class="auth-topbar-inner">
+      <a href="index.html" class="auth-brand">
+        <span class="auth-brand-icon">
+          <img src="../assets/img/LOGO_MINIMALISTA.jpg" alt="Mil Variedades" class="auth-brand-img" />
+        </span>
+        <span class="auth-brand-text">
+          <strong>Mil Variedades</strong>
+          <span>LA CEJA · PORTAL SEGURO</span>
+        </span>
+      </a>
 
-      <h2 class="login-titulo">Iniciar sesión</h2>
-      <p class="login-subtitulo">Acceso exclusivo para Administradores y Super Administradores.</p>
-
-      <form id="form-login" class="login-form" novalidate>
-        <div class="login-campo">
-          <label for="input-correo">Correo electrónico</label>
-          <input type="email" id="input-correo" name="correo" autocomplete="username" required />
-        </div>
-
-        <div class="login-campo">
-          <label for="input-contrasena">Contraseña</label>
-          <input type="password" id="input-contrasena" name="contrasena" autocomplete="current-password" required />
-        </div>
-
-        <p class="login-error" id="login-error" role="alert" style="display:none;"></p>
-
-        <button type="submit" class="btn-primario login-btn" id="btn-login">
-          <span id="btn-login-texto">Iniciar sesión</span>
-        </button>
-      </form>
-
-      <a href="index.html" class="login-volver"><i class="fa-solid fa-arrow-left"></i> Volver al sitio</a>
+      <div class="auth-topbar-pills">
+        <span class="auth-status-pill auth-status-online">
+          <span class="auth-status-dot"></span>
+          Operativo
+        </span>
+        <span class="auth-status-pill auth-status-ssl">
+          <i class="fa-solid fa-lock"></i>
+          SSL 256-BIT
+        </span>
+      </div>
     </div>
+  </header>
+
+  <main class="auth-main">
+
+    <!-- =================================================================
+         VISTA 1: INICIAR SESIÓN (Visible por defecto — screen_6.jpg)
+         ================================================================= -->
+    <section id="vista-login" class="auth-vista-login" aria-labelledby="titulo-login">
+      <div class="auth-login-shell">
+
+        <!-- Pestaña superior estilo libreta -->
+        <div class="auth-notebook-header">
+          <span class="auth-notebook-tab">
+            <i class="fa-solid fa-circle-check"></i> Acceso Autorizado
+          </span>
+          <span class="auth-notebook-meta">
+            <span class="auth-dot-gold"></span> Papelería · Mayorista · Escolar
+          </span>
+        </div>
+
+        <!-- Tarjeta central de Login -->
+        <div class="auth-login-card">
+          <div class="auth-card-body">
+
+            <div class="auth-mini-brand-pill">
+              <span class="auth-mini-brand-circle">
+                <i class="fa-solid fa-pen-nib"></i>
+              </span>
+              <div class="auth-mini-brand-copy">
+                <strong>Mil Variedades</strong>
+                <span>LA CEJA, ANTIOQUIA</span>
+              </div>
+            </div>
+
+            <h1 id="titulo-login" class="auth-card-title">Iniciar sesión</h1>
+            <p class="auth-card-subtitle">
+              Ingresa a tu cuenta para gestionar pedidos, catálogos e inventario escolar y de oficina.
+            </p>
+
+            <form id="form-login" class="auth-form" novalidate>
+              <div class="auth-field">
+                <div class="auth-label-row">
+                  <label for="login-correo">Correo electrónico</label>
+                  <span class="auth-label-tag">USUARIO</span>
+                </div>
+                <div class="auth-input-group">
+                  <i class="fa-regular fa-envelope auth-input-icon" aria-hidden="true"></i>
+                  <input
+                    type="email"
+                    id="login-correo"
+                    name="correo"
+                    placeholder="correo@ejemplo.com"
+                    autocomplete="username"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="auth-field">
+                <div class="auth-label-row">
+                  <label for="login-password">Contraseña</label>
+                  <button type="button" id="btn-abrir-recuperar" class="auth-link-inline">
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+                <div class="auth-input-group">
+                  <i class="fa-solid fa-lock auth-input-icon" aria-hidden="true"></i>
+                  <input
+                    type="password"
+                    id="login-password"
+                    name="contrasena"
+                    placeholder="••••••••••••"
+                    autocomplete="current-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="toggle-login-pass"
+                    class="auth-eye-btn"
+                    aria-label="Mostrar u ocultar contraseña"
+                  >
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="auth-remember-row">
+                <label class="auth-check-simple" for="login-recordar">
+                  <input type="checkbox" id="login-recordar" />
+                  <span>Recordar mi sesión</span>
+                </label>
+                <span class="auth-portal-badge">
+                  <i class="fa-solid fa-shield-halved"></i> Portal Seguro
+                </span>
+              </div>
+
+              <div id="login-mensaje" class="auth-mensaje" role="alert" hidden></div>
+
+              <button type="submit" id="btn-submit-login" class="auth-btn-primario">
+                <span id="btn-submit-login-texto">Iniciar sesión</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </form>
+
+            <div class="auth-divider">
+              <span>O CONTINÚA CON</span>
+            </div>
+
+            <div id="google-btn-login" class="auth-google-container"></div>
+
+            <div class="auth-divider">
+              <span>¿AÚN NO TIENES CUENTA?</span>
+            </div>
+
+            <button type="button" id="ir-a-registro" class="auth-btn-secundario">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Crear cuenta</span>
+            </button>
+
+            <div class="auth-back-wrap">
+              <a href="index.html" class="auth-volver-link">
+                <i class="fa-solid fa-arrow-left"></i> Volver a la tienda principal
+              </a>
+            </div>
+          </div>
+
+          <div class="auth-card-footer">
+            <span><i class="fa-solid fa-store"></i> La Ceja</span>
+            <span><i class="fa-solid fa-lock"></i> Cifrado TLS 1.3</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila inferior de beneficios + soporte WhatsApp -->
+      <div class="auth-login-bottom">
+        <div class="auth-benefits-row">
+          <article class="auth-benefit-card">
+            <span class="auth-benefit-icon auth-icon-red">
+              <i class="fa-solid fa-box-archive"></i>
+            </span>
+            <div>
+              <strong>Stock en Vivo</strong>
+              <p>Listas escolares y oficina con inventario al instante.</p>
+            </div>
+          </article>
+
+          <article class="auth-benefit-card">
+            <span class="auth-benefit-icon auth-icon-gold">
+              <i class="fa-solid fa-file-invoice"></i>
+            </span>
+            <div>
+              <strong>Cotizaciones</strong>
+              <p>Envía tu lista escolar o de oficina y confirma existencias por chat.</p>
+            </div>
+          </article>
+
+          <article class="auth-benefit-card">
+            <span class="auth-benefit-icon auth-icon-blue">
+              <i class="fa-solid fa-truck-fast"></i>
+            </span>
+            <div>
+              <strong>Envío Exprés</strong>
+              <p>Cobertura urbana en La Ceja y el Oriente Antioqueño.</p>
+            </div>
+          </article>
+        </div>
+
+        <a
+          href="https://wa.me/573218106700?text=Hola%20Mil%20Variedades%2C%20necesito%20soporte%20con%20mi%20cuenta"
+          data-whatsapp-auth
+          target="_blank"
+          rel="noopener"
+          class="auth-wsp-pill-card"
+        >
+          <span class="auth-wsp-pill-icon">
+            <i class="fa-regular fa-comment-dots"></i>
+          </span>
+          <div>
+            <strong>Soporte WhatsApp</strong>
+            <span>Atención directa e inmediata</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- =================================================================
+         VISTA 2: CREAR CUENTA NUEVA (Oculta inicialmente — screen_5.jpg)
+         ================================================================= -->
+    <section id="vista-registro" class="auth-vista-registro" aria-labelledby="titulo-registro" hidden>
+
+      <!-- Barra de anuncio superior -->
+      <div class="auth-anuncio-bar">
+        <div class="auth-anuncio-left">
+          <i class="fa-solid fa-truck-fast"></i>
+          <span>ENVÍOS EXPRÉS A TODO EL CASCO URBANO DE LA CEJA Y VEREDAS</span>
+        </div>
+        <div class="auth-anuncio-right">
+          <span><i class="fa-regular fa-clock"></i> Lun - Sáb: 8:00 AM - 8:00 PM</span>
+          <span class="auth-anuncio-sep">·</span>
+          <a
+            href="https://wa.me/573218106700?text=Hola%20Mil%20Variedades%2C%20necesito%20ayuda%20en%20l%C3%ADnea"
+            data-whatsapp-auth
+            target="_blank"
+            rel="noopener"
+            class="auth-ayuda-link"
+          >
+            <i class="fa-regular fa-circle-question"></i> Ayuda en línea
+          </a>
+        </div>
+      </div>
+
+      <!-- Grid principal de 2 columnas -->
+      <div class="auth-registro-grid">
+
+        <!-- Columna izquierda: Formulario de registro -->
+        <div class="auth-registro-card">
+          <div class="auth-reg-badges">
+            <div class="auth-reg-badges-left">
+              <span class="auth-chip-cream">
+                <i class="fa-solid fa-user-plus"></i> PORTAL CLIENTES
+              </span>
+              <span class="auth-chip-cream">
+                <i class="fa-solid fa-pen-ruler"></i> PAPELERÍA
+              </span>
+            </div>
+            <span class="auth-chip-temporada">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> TEMPORADA ESCOLAR 2026
+            </span>
+          </div>
+
+          <h2 id="titulo-registro" class="auth-reg-title">
+            Crear cuenta <span class="auth-palabra-resaltada">nueva</span>
+          </h2>
+          <p class="auth-reg-subtitle">
+            Únete a nuestra familia en La Ceja. Gestiona tus listas de útiles escolares, cotiza suministros de oficina al por mayor y recibe atención personalizada por WhatsApp.
+          </p>
+
+          <form id="form-registro" class="auth-form" novalidate>
+            <div class="auth-form-grid-2">
+              <!-- 1. Nombre -->
+              <div class="auth-field">
+                <div class="auth-label-row">
+                  <label for="reg-nombre">Nombre <span class="auth-req">*</span></label>
+                </div>
+                <div class="auth-input-group">
+                  <i class="fa-regular fa-user auth-input-icon" aria-hidden="true"></i>
+                  <input
+                    type="text"
+                    id="reg-nombre"
+                    name="nombre"
+                    placeholder="Ej: Camila"
+                    autocomplete="given-name"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- 2. Apellido -->
+              <div class="auth-field">
+                <div class="auth-label-row">
+                  <label for="reg-apellido">Apellido <span class="auth-req">*</span></label>
+                </div>
+                <div class="auth-input-group">
+                  <i class="fa-regular fa-id-card auth-input-icon" aria-hidden="true"></i>
+                  <input
+                    type="text"
+                    id="reg-apellido"
+                    name="apellido"
+                    placeholder="Ej: Restrepo"
+                    autocomplete="family-name"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- 3. Teléfono / WhatsApp -->
+              <div class="auth-field">
+                <div class="auth-label-row">
+                  <label for="reg-telefono">Teléfono / WhatsApp <span class="auth-req">*</span></label>
+                  <span class="auth-label-blue">Para cotizaciones</span>
+                </div>
+                <div class="auth-input-group auth-input-phone">
+                  <span class="auth-phone-prefix">
+                    <small>CO</small> <strong>+57</strong>
+                  </span>
+                  <input
+                    type="tel"
+                    id="reg-telefono"
+                    name="telefono"
+                    placeholder="321 810 6700"
+                    inputmode="numeric"
+                    autocomplete="tel-national"
+                    maxlength="14"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- 4. Correo electrónico -->
+              <div class="auth-field">
+                <div class="auth-label-row">
+                  <label for="reg-correo">Correo electrónico <span class="auth-req">*</span></label>
+                </div>
+                <div class="auth-input-group">
+                  <i class="fa-regular fa-envelope auth-input-icon" aria-hidden="true"></i>
+                  <input
+                    type="email"
+                    id="reg-correo"
+                    name="correo"
+                    placeholder="ejemplo@correo.com"
+                    autocomplete="email"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- 5. Contraseña -->
+              <div class="auth-field">
+                <div class="auth-label-row">
+                  <label for="reg-password">Contraseña <span class="auth-req">*</span></label>
+                </div>
+                <div class="auth-input-group">
+                  <i class="fa-solid fa-lock auth-input-icon" aria-hidden="true"></i>
+                  <input
+                    type="password"
+                    id="reg-password"
+                    name="password"
+                    placeholder="••••••••"
+                    autocomplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="toggle-reg-pass"
+                    class="auth-eye-btn"
+                    aria-label="Mostrar u ocultar contraseña"
+                  >
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+                <span id="texto-longitud-pass" class="auth-field-hint">
+                  <span class="auth-hint-dot auth-dot-amber"></span>
+                  Mínimo 8 caracteres alfanuméricos
+                </span>
+              </div>
+
+              <!-- 6. Confirmar contraseña -->
+              <div class="auth-field">
+                <div class="auth-label-row">
+                  <label for="reg-confirmar">Confirmar contraseña <span class="auth-req">*</span></label>
+                </div>
+                <div class="auth-input-group">
+                  <i class="fa-regular fa-circle-check auth-input-icon" aria-hidden="true"></i>
+                  <input
+                    type="password"
+                    id="reg-confirmar"
+                    name="confirmar"
+                    placeholder="••••••••"
+                    autocomplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    id="toggle-reg-confirmar"
+                    class="auth-eye-btn"
+                    aria-label="Mostrar u ocultar confirmación de contraseña"
+                  >
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+                <span id="texto-coincidencia" class="auth-field-hint">
+                  <span class="auth-hint-dot auth-dot-green"></span>
+                  Verificación de coincidencia
+                </span>
+              </div>
+            </div>
+
+            <!-- Checkboxes legales y promocionales -->
+            <div class="auth-checkbox-group">
+              <label class="auth-check-item" for="reg-habeas">
+                <input type="checkbox" id="reg-habeas" required />
+                <span>
+                  Acepto los <button type="button" id="btn-abrir-terminos" class="auth-link-inline">Términos y Condiciones y Seguridad de Datos</button> y autorizo el tratamiento de mis datos personales de acuerdo con la política de Habeas Data de Mil Variedades.
+                </span>
+              </label>
+
+              <label class="auth-check-item" for="reg-promos">
+                <input type="checkbox" id="reg-promos" checked />
+                <span>
+                  Deseo recibir cotizaciones personalizadas, catálogos escolares y promociones especiales directamente en mi WhatsApp.
+                </span>
+              </label>
+            </div>
+
+            <div id="registro-mensaje" class="auth-mensaje" role="alert" hidden></div>
+
+            <button type="submit" id="btn-submit-registro" class="auth-btn-primario">
+              <span>Crear mi cuenta</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+
+            <p class="auth-free-note">
+              <i class="fa-regular fa-circle-check"></i>
+              Sin costos de afiliación. Acceso inmediato a precios al por mayor.
+            </p>
+          </form>
+
+          <div class="auth-divider">
+            <span>O REGÍSTRATE RÁPIDO CON</span>
+          </div>
+
+          <div id="google-btn-registro" class="auth-google-container"></div>
+
+          <div class="auth-already-box">
+            <span class="auth-already-text">
+              <i class="fa-regular fa-circle-user"></i>
+              ¿YA TIENES UNA CUENTA REGISTRADA?
+            </span>
+            <button type="button" id="ir-a-login" class="auth-btn-outline-login">
+              <span>Iniciar sesión</span>
+              <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            </button>
+          </div>
+
+          <div class="auth-back-wrap">
+            <a href="index.html" class="auth-volver-link">
+              <i class="fa-solid fa-arrow-left"></i> Volver a la tienda principal y catálogo
+            </a>
+          </div>
+        </div>
+
+        <!-- Columna derecha: Tarjetas informativas -->
+        <aside class="auth-registro-aside">
+          <!-- Tarjeta 1: Comercio Cejeño -->
+          <div class="auth-aside-card-cream">
+            <span class="auth-aside-eyebrow">
+              <i class="fa-solid fa-store"></i> COMERCIO CEJEÑO
+            </span>
+            <h3>¿Por qué registrarte en Mil Variedades?</h3>
+            <p class="auth-aside-desc">
+              Más de 10 años abasteciendo a estudiantes, docentes, oficinas y familias del Oriente Antioqueño.
+            </p>
+
+            <div class="auth-aside-subcard">
+              <span class="auth-subcard-icon auth-icon-red">
+                <i class="fa-solid fa-tags"></i>
+              </span>
+              <div>
+                <strong>Beneficios Mayoristas</strong>
+                <p>Descuentos especiales escalonados por volumen y precios preferenciales en listas escolares completas.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tarjeta 2: Atención Directa (WhatsApp) -->
+          <div class="auth-promo-card">
+            <div class="auth-promo-top">
+              <span class="auth-promo-badge">
+                <span class="auth-status-dot"></span> ATENCIÓN DIRECTA EN LÍNEA
+              </span>
+              <i class="fa-regular fa-message auth-promo-chat-icon" aria-hidden="true"></i>
+            </div>
+            <h3>¿Prefieres crear tu pedido por WhatsApp?</h3>
+            <p>
+              Envíanos la foto de la lista escolar o el requerimiento de tu papelería y nuestro asesor en mostrador te responderá de inmediato.
+            </p>
+            <a
+              href="https://wa.me/573218106700?text=Hola%20Mil%20Variedades%2C%20quiero%20hacer%20un%20pedido%20o%20cotizar%20una%20lista%20escolar"
+              data-whatsapp-auth
+              target="_blank"
+              rel="noopener"
+              class="auth-btn-wsp-local"
+            >
+              <i class="fa-brands fa-whatsapp"></i>
+              <span>Escribir al WhatsApp Local</span>
+            </a>
+          </div>
+
+          <!-- Fila de 2 mini-tarjetas de confianza -->
+          <div class="auth-trust-mini-row">
+            <div class="auth-trust-mini-card">
+              <i class="fa-solid fa-shield-halved auth-trust-blue"></i>
+              <strong>100% Confiable</strong>
+              <span>Comercio Registrado</span>
+            </div>
+            <div class="auth-trust-mini-card">
+              <i class="fa-solid fa-award auth-trust-red"></i>
+              <strong>Garantía Real</strong>
+              <span>Cambio en tienda</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Barra de dirección física inferior -->
+      <div class="auth-direccion-bar">
+        <span>
+          <i class="fa-solid fa-location-dot"></i>
+          Punto Físico: Carrera 17 #20-64 (Al frente de la Casa de Justicia), La Ceja - Antioquia
+        </span>
+        <strong>TEL / WHATSAPP: 321 810 6700</strong>
+      </div>
+    </section>
+
   </main>
 
+  <!-- =================================================================
+       MODAL: RECUPERAR CONTRASEÑA (screen.png)
+       ================================================================= -->
+  <div
+    id="modal-recuperar"
+    class="auth-modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="titulo-modal-recuperar"
+    hidden
+  >
+    <div class="auth-modal-card">
+      <button
+        type="button"
+        id="cerrar-modal-recuperar"
+        class="auth-modal-close"
+        aria-label="Cerrar modal"
+      >
+        &times;
+      </button>
+
+      <div class="auth-modal-icon-box">
+        <i class="fa-solid fa-key"></i>
+      </div>
+
+      <h2 id="titulo-modal-recuperar" class="auth-modal-title">Recuperar contraseña</h2>
+      <p class="auth-modal-desc">
+        Ingresa el correo electrónico asociado a tu cuenta. Te enviaremos un enlace seguro para restablecer tu acceso.
+      </p>
+
+      <form id="form-recuperar" class="auth-modal-form" novalidate>
+        <div class="auth-field">
+          <label for="rec-correo" class="auth-modal-label">CORREO ELECTRÓNICO</label>
+          <div class="auth-input-group auth-input-modal">
+            <i class="fa-solid fa-at auth-input-icon" aria-hidden="true"></i>
+            <input
+              type="email"
+              id="rec-correo"
+              name="correo_recuperacion"
+              placeholder="correo@ejemplo.com"
+              autocomplete="email"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="auth-modal-expiry">
+          <i class="fa-regular fa-clock"></i>
+          <span>Por seguridad, el enlace temporal expira en 15 minutos.</span>
+        </div>
+
+        <div id="recuperar-mensaje" class="auth-mensaje" role="alert" hidden></div>
+
+        <button type="submit" id="btn-submit-recuperar" class="auth-btn-primario auth-btn-modal">
+          <span>Enviar instrucciones de recuperación</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <button type="button" id="cancelar-recuperar" class="auth-modal-cancel">
+          Cancelar y volver al inicio de sesión
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       MODAL: TÉRMINOS, CONDICIONES Y SEGURIDAD DE LOS DATOS ENVIADOS
+       ================================================================= -->
+  <div
+    id="modal-terminos"
+    class="auth-modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="titulo-modal-terminos"
+    hidden
+  >
+    <div class="auth-modal-card auth-modal-terminos-card">
+      <button
+        type="button"
+        id="cerrar-modal-terminos"
+        class="auth-modal-close"
+        aria-label="Cerrar términos y condiciones"
+      >
+        &times;
+      </button>
+
+      <div class="auth-modal-icon-box">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+
+      <h2 id="titulo-modal-terminos" class="auth-modal-title">
+        Términos, Condiciones y Seguridad de Datos
+      </h2>
+      <p class="auth-modal-desc">
+        Conoce cómo protegemos tu información y las condiciones de servicio de Mil Variedades en La Ceja, Antioquia.
+      </p>
+
+      <div class="auth-terminos-scroll">
+        <div class="auth-termino-bloque">
+          <h3><i class="fa-solid fa-lock"></i> 1. Seguridad de los datos enviados</h3>
+          <p>
+            Toda la información que ingresas en este portal (nombre, teléfono, correo electrónico y credenciales) se transmite bajo protocolos seguros con <strong>cifrado TLS 1.3 / SSL de 256 bits</strong>. Tus datos están resguardados de forma confidencial y nunca son vendidos, alquilados ni compartidos con terceros ajenos a la operación de tu pedido.
+          </p>
+        </div>
+
+        <div class="auth-termino-bloque">
+          <h3><i class="fa-solid fa-user-shield"></i> 2. Tratamiento de Datos Personales (Habeas Data)</h3>
+          <p>
+            En cumplimiento de la Ley 1581 de 2012 de Protección de Datos Personales en Colombia, los datos suministrados se utilizan única y exclusivamente para identificar tus pedidos por WhatsApp, enviarte cotizaciones solicitadas y coordinar entregas en La Ceja y el Oriente Antioqueño. Puedes solicitar la actualización o eliminación de tus datos en cualquier momento a través de nuestro canal de WhatsApp <strong>321 810 6700</strong>.
+          </p>
+        </div>
+
+        <div class="auth-termino-bloque">
+          <h3><i class="fa-solid fa-file-contract"></i> 3. Términos y Condiciones del Servicio</h3>
+          <p>
+            Los precios y existencias publicados en el catálogo corresponden al inventario vigente de nuestra tienda física ubicada en la <strong>Carrera 17 #20-64 (al frente de la Casa de Justicia), La Ceja</strong>. La confirmación final del pedido, medios de pago y tiempos de entrega a domicilio se coordinan directamente con nuestro equipo al enviar tu resumen de compra por WhatsApp.
+          </p>
+        </div>
+      </div>
+
+      <button type="button" id="btn-aceptar-terminos" class="auth-btn-primario auth-btn-modal">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>Entendido y aceptar términos</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Pie de página institucional -->
+  <footer class="auth-footer">
+    <div class="auth-footer-inner">
+      <p class="auth-footer-copy">
+        © 2026 Mil Variedades La Ceja. Tradición y Confianza.
+      </p>
+
+      <nav class="auth-footer-links" aria-label="Enlaces de soporte">
+        <a
+          href="https://wa.me/573218106700?text=Hola%20Mil%20Variedades%2C%20necesito%20soporte%20local"
+          data-whatsapp-auth
+          target="_blank"
+          rel="noopener"
+        >
+          <i class="fa-solid fa-headset"></i> Soporte Local
+        </a>
+        <a href="https://www.instagram.com/mil_variedades_laceja/" target="_blank" rel="noopener">
+          <i class="fa-brands fa-instagram"></i> Instagram
+        </a>
+        <a href="https://www.facebook.com/milvariedades.laceja/?locale=es_LA" target="_blank" rel="noopener">
+          <i class="fa-brands fa-facebook-f"></i> Facebook
+        </a>
+        <a href="index.html">
+          <i class="fa-solid fa-store"></i> Nuestra Tienda
+        </a>
+      </nav>
+    </div>
+  </footer>
+
   <script src="../assets/js/api.js"></script>
-  <script src="../assets/js/login.js"></script>
+  <script src="../assets/js/auth.js"></script>
 </body>
 </html>

@@ -8,7 +8,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
   <link rel="stylesheet" href="../assets/css/styles.css" />
@@ -16,19 +16,30 @@
 <body class="panel-body">
 
   <header class="panel-header">
-  <a href="index.html" class="logo">
-  <span class="logo-icono">
-    <img src="../assets/img/LOGO_MINIMALISTA.jpg" alt="Mil Variedades" class="logo-img">
-  </span>
-  <span class="logo-texto">
-    <h1>Mil Variedades</h1>
-    <span>Panel administrativo</span>
-  </span>
-</a>
+    <div class="panel-header-izq">
+      <a href="index.html" class="logo">
+        <span class="logo-icono">
+          <img src="../assets/img/LOGO_MINIMALISTA.jpg" alt="Mil Variedades" class="logo-img">
+        </span>
+        <span class="logo-texto">
+          <span class="panel-logo-linea">
+            <h1>Mil Variedades</h1>
+            <small class="panel-badge-ceja">LA CEJA</small>
+          </span>
+          <span>PANEL ADMINISTRATIVO</span>
+        </span>
+      </a>
+      <span class="panel-header-sep" aria-hidden="true"></span>
+      <div class="panel-status-pill">
+        <span class="panel-status-dot" aria-hidden="true"></span>
+        <span>Servidor operativo • La Ceja, Antioquia</span>
+      </div>
+    </div>
+
     <div class="panel-header-usuario">
       <div class="panel-usuario-info">
-        <strong id="panel-usuario-nombre">—</strong>
-        <span class="panel-usuario-rol" id="panel-usuario-rol">—</span>
+        <strong id="panel-usuario-nombre">Paola Sosa</strong>
+        <span class="panel-usuario-rol" id="panel-usuario-rol">Super Administradora</span>
       </div>
       <button class="btn-secundario panel-btn-salir" id="btn-cerrar-sesion" type="button">
         <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
@@ -36,20 +47,25 @@
     </div>
   </header>
 
-  <nav class="panel-tabs">
-    <button class="panel-tab activo" id="tab-productos" type="button">
-      <i class="fa-solid fa-box"></i> Productos
-    </button>
-    <button class="panel-tab" id="tab-categorias" type="button">
-      <i class="fa-solid fa-tags"></i> Categorías
-    </button>
+  <nav class="panel-tabs" aria-label="Secciones del panel">
+    <div class="panel-tabs-inner">
+      <button class="panel-tab activo" id="tab-productos" type="button">
+        <i class="fa-solid fa-box-archive"></i> Productos
+      </button>
+      <button class="panel-tab" id="tab-categorias" type="button">
+        <i class="fa-solid fa-tag"></i> Categorías
+      </button>
+    </div>
   </nav>
 
   <main class="panel-contenido">
     <!-- ---------- Sección Productos ---------- -->
     <section id="seccion-productos" class="panel-seccion">
       <div class="panel-toolbar">
-        <span class="panel-contador" id="contador-productos">Cargando productos…</span>
+        <div class="panel-toolbar-info">
+          <span class="panel-contador" id="contador-productos">Cargando productos…</span>
+          <p class="panel-subtitulo">Gestión de catálogo activo para venta y vitrina</p>
+        </div>
         <button class="btn-primario" id="btn-nuevo-producto" type="button">
           <i class="fa-solid fa-plus"></i> Nuevo producto
         </button>
@@ -64,7 +80,7 @@
               <th>Precio</th>
               <th>Stock</th>
               <th>Fotos</th>
-              <th></th>
+              <th class="th-acciones">Acciones</th>
             </tr>
           </thead>
           <tbody id="tabla-productos-body">
@@ -73,13 +89,19 @@
         </table>
       </div>
 
-      <nav class="paginacion" id="paginacion-productos" aria-label="Paginación de productos"></nav>
+      <div class="panel-seccion-footer">
+        <span class="panel-footer-meta" id="resumen-pie-productos">Mostrando resultados</span>
+        <nav class="paginacion" id="paginacion-productos" aria-label="Paginación de productos"></nav>
+      </div>
     </section>
 
     <!-- ---------- Sección Categorías ---------- -->
     <section id="seccion-categorias" class="panel-seccion" style="display:none;">
       <div class="panel-toolbar">
-        <span class="panel-contador" id="contador-categorias">Cargando categorías…</span>
+        <div class="panel-toolbar-info">
+          <span class="panel-contador" id="contador-categorias">Cargando categorías…</span>
+          <p class="panel-subtitulo">Gestión general y clasificación de catálogo comercial</p>
+        </div>
         <button class="btn-primario" id="btn-nueva-categoria" type="button">
           <i class="fa-solid fa-plus"></i> Nueva categoría
         </button>
@@ -91,7 +113,7 @@
             <tr>
               <th>Nombre</th>
               <th>Descripción</th>
-              <th></th>
+              <th class="th-acciones">Acciones</th>
             </tr>
           </thead>
           <tbody id="tabla-categorias-body">
@@ -99,8 +121,20 @@
           </tbody>
         </table>
       </div>
+
+      <div class="panel-seccion-footer">
+        <span class="panel-footer-meta" id="resumen-pie-categorias">Mostrando registros</span>
+        <span class="panel-footer-meta">Almacén Central • La Ceja, Antioquia</span>
+      </div>
     </section>
   </main>
+
+  <footer class="panel-footer">
+    <div class="panel-footer-inner">
+      <span><i class="fa-solid fa-shield-halved"></i> © 2026 Papelería y Variedades Mil Variedades • La Ceja, Antioquia • Panel Administrativo Seguro</span>
+      <span class="panel-footer-der">Sesión Segura TLS 1.3 &nbsp;•&nbsp; <a href="index.html">Ver tienda pública</a></span>
+    </div>
+  </footer>
 
   <!-- ---------- Modal: crear/editar producto ---------- -->
   <div class="panel-modal-overlay" id="modal-producto-overlay"></div>
@@ -115,18 +149,18 @@
 
       <div class="panel-campo">
         <label for="producto-nombre">Nombre</label>
-        <input type="text" id="producto-nombre" required minlength="3" maxlength="150" />
+        <input type="text" id="producto-nombre" required minlength="3" maxlength="150" placeholder="Ej. Cuaderno Rayado Norma 100 Hojas" />
       </div>
 
       <div class="panel-campo">
         <label for="producto-descripcion">Descripción</label>
-        <textarea id="producto-descripcion" rows="3"></textarea>
+        <textarea id="producto-descripcion" rows="3" placeholder="Descripción detallada del producto"></textarea>
       </div>
 
       <div class="panel-campo-fila">
         <div class="panel-campo">
           <label for="producto-precio">Precio</label>
-          <input type="number" id="producto-precio" required min="0" step="1" />
+          <input type="number" id="producto-precio" required min="0" step="1" placeholder="0" />
         </div>
         <div class="panel-campo">
           <label for="producto-categoria">Categoría</label>
@@ -136,7 +170,7 @@
 
       <div class="panel-campo" id="campo-stock" style="display:none;">
         <label for="producto-stock">Stock disponible</label>
-        <input type="number" id="producto-stock" min="0" step="1" />
+        <input type="number" id="producto-stock" min="0" step="1" placeholder="0" />
       </div>
 
       <div class="panel-campo" id="campo-imagenes" style="display:none;">
@@ -144,8 +178,8 @@
         <div class="panel-imagenes-lista" id="panel-imagenes-lista"></div>
         <div class="panel-imagen-subir">
           <input type="file" id="producto-imagen-archivo" accept="image/*" />
-          <button type="button" class="btn-secundario" id="btn-subir-imagen">
-            <i class="fa-solid fa-upload"></i> Subir foto
+          <button type="button" class="btn-secundario panel-btn-subir" id="btn-subir-imagen">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i> Subir foto
           </button>
         </div>
         <p class="panel-imagenes-nota">La primera foto de la lista es la que se muestra en el catálogo.</p>
@@ -154,8 +188,8 @@
       <p class="login-error" id="producto-error" role="alert" style="display:none;"></p>
 
       <div class="panel-form-acciones">
-        <button type="button" class="btn-secundario" id="btn-cancelar-producto">Cancelar</button>
-        <button type="submit" class="btn-primario" id="btn-guardar-producto">Guardar</button>
+        <button type="button" class="btn-secundario panel-btn-cancelar" id="btn-cancelar-producto">Cancelar</button>
+        <button type="submit" class="btn-primario panel-btn-guardar" id="btn-guardar-producto">Guardar</button>
       </div>
     </form>
   </div>
@@ -173,19 +207,19 @@
 
       <div class="panel-campo">
         <label for="categoria-nombre">Nombre</label>
-        <input type="text" id="categoria-nombre" required minlength="2" maxlength="100" />
+        <input type="text" id="categoria-nombre" required minlength="2" maxlength="100" placeholder="Ej. Útiles Escolares" />
       </div>
 
       <div class="panel-campo">
         <label for="categoria-descripcion">Descripción</label>
-        <textarea id="categoria-descripcion" rows="3"></textarea>
+        <textarea id="categoria-descripcion" rows="3" placeholder="Descripción breve de la categoría"></textarea>
       </div>
 
       <p class="login-error" id="categoria-error" role="alert" style="display:none;"></p>
 
       <div class="panel-form-acciones">
-        <button type="button" class="btn-secundario" id="btn-cancelar-categoria">Cancelar</button>
-        <button type="submit" class="btn-primario" id="btn-guardar-categoria">Guardar</button>
+        <button type="button" class="btn-secundario panel-btn-cancelar" id="btn-cancelar-categoria">Cancelar</button>
+        <button type="submit" class="btn-primario panel-btn-guardar" id="btn-guardar-categoria">Guardar</button>
       </div>
     </form>
   </div>

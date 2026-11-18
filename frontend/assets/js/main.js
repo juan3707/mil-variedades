@@ -6,8 +6,8 @@
 // - Estadísticas mostradas: SIEMPRE reales, nunca inventadas.
 // ============================================================
 
-let numeroWhatsapp = "";
-let mensajeWhatsappDefault = "";
+let numeroWhatsapp = "573218106700";
+let mensajeWhatsappDefault = "Hola, estoy interesado en un producto de Mil Variedades";
 let productosCargados = [];
 let productoModalActual = null;
 let categoriasCargadas = [];
@@ -19,6 +19,7 @@ const formateadorPrecio = new Intl.NumberFormat("es-CO", {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+  inicializarSesionClienteHeader();
   cargarConfiguracion();
   cargarCategoriasYProductos();
   activarSidebar();
@@ -35,29 +36,40 @@ document.addEventListener("DOMContentLoaded", () => {
 // Header con sombra sutil apenas se hace scroll (da sensación de profundidad)
 function activarSombraHeader() {
   const header = document.querySelector(".site-header");
-  window.addEventListener("scroll", () => {
-    header.classList.toggle("con-sombra", window.scrollY > 10);
-  });
+  if (!header) return;
+  let conSombra = false;
+  window.addEventListener(
+    "scroll",
+    () => {
+      const debeTenerSombra = window.scrollY > 10;
+      if (debeTenerSombra !== conSombra) {
+        conSombra = debeTenerSombra;
+        header.classList.toggle("con-sombra", conSombra);
+      }
+    },
+    { passive: true }
+  );
 }
 
 // ---------- Configuración (WhatsApp) ----------
 async function cargarConfiguracion() {
+  numeroWhatsapp = "573218106700";
+  const textoNumero = "321 810 6700";
+
+  const footerNum = document.getElementById("footer-numero");
+  if (footerNum) footerNum.textContent = textoNumero;
+  const mapaNumero = document.getElementById("mapa-numero");
+  if (mapaNumero) mapaNumero.textContent = textoNumero;
+
+  actualizarEnlacesWhatsapp();
+
   try {
     const config = await api.obtenerConfig();
-    const numeroConfig = config.find((c) => c.nombre === "whatsapp_numero");
     const mensajeConfig = config.find((c) => c.nombre === "whatsapp_mensaje_default");
-
-    numeroWhatsapp = numeroConfig ? numeroConfig.valor : "";
-    mensajeWhatsappDefault = mensajeConfig
-      ? mensajeConfig.valor
-      : "Hola, estoy interesado en un producto de Mil Variedades";
-
-    actualizarEnlacesWhatsapp();
-
-    const textoNumero = numeroWhatsapp ? `+${numeroWhatsapp}` : "";
-    document.getElementById("footer-numero").textContent = textoNumero;
-    const mapaNumero = document.getElementById("mapa-numero");
-    if (mapaNumero) mapaNumero.textContent = textoNumero;
+    if (mensajeConfig && mensajeConfig.valor) {
+      mensajeWhatsappDefault = mensajeConfig.valor;
+      actualizarEnlacesWhatsapp();
+    }
   } catch (error) {
     console.error("No se pudo cargar la configuración:", error.message);
   }
@@ -75,6 +87,10 @@ function actualizarEnlacesWhatsapp() {
       const el = document.getElementById(id);
       if (el) el.href = enlace;
     });
+  document.querySelectorAll("[data-whatsapp-link]").forEach((el) => {
+    const msg = el.getAttribute("data-whatsapp-msg");
+    el.href = msg ? construirEnlaceWhatsapp(msg) : enlace;
+  });
 }
 
 // ---------- Categorías ----------
@@ -144,19 +160,24 @@ async function cargarCategoriasYProductos() {
       vacio.textContent = "Todavía no hay categorías para mostrar.";
       contenedorCat.appendChild(vacio);
     } else {
-      // Conteo REAL de productos por categoría: como productosCargados ya
-      // no trae el catálogo completo, no se puede calcular filtrando
-      // localmente. Se pide al backend una vez por categoría, en paralelo,
-      // pidiendo solo 1 producto (limit=1) — lo único que interesa de esa
-      // respuesta es paginacion.total_productos, no la lista en sí.
-      const conteosPorCategoria = await Promise.all(
-        categoriasCargadas.map((categoria) =>
-          api
-            .obtenerProductos({ categoria: categoria.id_categoria, limit: 1 })
-            .then((resultado) => (resultado.paginacion ? resultado.paginacion.total_productos : 0))
-            .catch(() => 0)
-        )
-      );
+      // Conteo REAL de productos por categoría con caché en sessionStorage
+      // (TTL 5 min) para no disparar N peticiones en cada recarga.
+      let conteosPorCategoria =
+        typeof leerCacheSesion === "function" ? leerCacheSesion("mv_cache_conteos_cat") : null;
+
+      if (!Array.isArray(conteosPorCategoria) || conteosPorCategoria.length !== categoriasCargadas.length) {
+        conteosPorCategoria = await Promise.all(
+          categoriasCargadas.map((categoria) =>
+            api
+              .obtenerProductos({ categoria: categoria.id_categoria, limit: 1 })
+              .then((resultado) => (resultado.paginacion ? resultado.paginacion.total_productos : 0))
+              .catch(() => 0)
+          )
+        );
+        if (typeof guardarCacheSesion === "function") {
+          guardarCacheSesion("mv_cache_conteos_cat", conteosPorCategoria);
+        }
+      }
 
       categoriasCargadas.forEach((categoria, indice) => {
         contenedorCat.appendChild(crearTarjetaCategoria(categoria, indice, conteosPorCategoria[indice]));
@@ -179,22 +200,15 @@ function crearTarjetaCategoria(categoria, indice, totalProductos) {
   tarjeta.className = "categoria-card";
   tarjeta.href = "#destacados";
   tarjeta.setAttribute("data-reveal", "");
-  tarjeta.style.setProperty("--tab-color", COLORES_CATEGORIA[indice % COLORES_CATEGORIA.length]);
+  const colorCat = COLORES_CATEGORIA[indice % COLORES_CATEGORIA.length];
+  tarjeta.style.setProperty("--tab-color", colorCat);
   tarjeta.addEventListener("click", () => filtrarPorCategoria(categoria.id_categoria));
 
-  // Si existe una foto real para esta categoría (frontend/assets/img/categorias/{slug}.jpg),
-  // se muestra en vez del ícono. Si no existe, el error de carga oculta la
-  // foto y no pasa nada más — el ícono de abajo siempre está presente.
-  const slug = categoria.nombre
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quita tildes
-    .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-  const foto = document.createElement("img");
-  foto.className = "foto-categoria";
-  foto.alt = "";
-  foto.src = `../assets/img/categorias/${slug}.jpg`;
-  foto.onerror = () => foto.remove();
-  tarjeta.appendChild(foto);
+  const pestana = document.createElement("span");
+  pestana.className = "categoria-pestana";
+  pestana.style.background = colorCat;
+  pestana.textContent = categoria.nombre;
+  tarjeta.appendChild(pestana);
 
   const iconoWrap = document.createElement("div");
   iconoWrap.className = "icono-wrap";
@@ -213,8 +227,15 @@ function crearTarjetaCategoria(categoria, indice, totalProductos) {
 
   const contador = document.createElement("span");
   contador.className = "categoria-contador";
-  contador.textContent = `${totalProductos} producto${totalProductos === 1 ? "" : "s"}`;
-  tarjeta.appendChild(contador);
+  contador.textContent = `Ver ${totalProductos} producto${totalProductos === 1 ? "" : "s"}`;
+
+  const footer = document.createElement("div");
+  footer.className = "categoria-footer";
+  footer.appendChild(contador);
+  const flecha = document.createElement("i");
+  flecha.className = "fa-solid fa-arrow-right";
+  footer.appendChild(flecha);
+  tarjeta.appendChild(footer);
 
   return tarjeta;
 }
@@ -272,22 +293,34 @@ function renderizarProductos(productos) {
   }
 
   productos.forEach((producto) => contenedor.appendChild(crearTarjetaProducto(producto)));
-  activarScrollReveal(); // las tarjetas nuevas (por filtro o búsqueda) también deben animarse
+}
+
+function imagenLocalProducto(nombre) {
+  const n = (nombre || "").toLowerCase();
+  if (n.includes("norma") || n.includes("cuaderno")) return "../assets/img/productos/norma.jpg";
+  if (n.includes("lapicero") || n.includes("faber")) return "../assets/img/productos/lapicero_negro_faber.jpg";
+  if (n.includes("resaltador") || n.includes("stabilo")) return "../assets/img/productos/stabilo_resaltadorx4.jpg";
+  if (n.includes("detergente") || n.includes("fab")) return "../assets/img/productos/FAB_liquido.jpg";
+  return "";
 }
 
 function crearTarjetaProducto(producto) {
   const tarjeta = document.createElement("article");
   tarjeta.className = "producto-card";
-  tarjeta.setAttribute("data-reveal", "");
   tarjeta.addEventListener("click", () => abrirModalProducto(producto.id_producto));
 
   const imgWrap = document.createElement("div");
   imgWrap.className = "producto-img";
-  if (producto.imagen_portada) {
+  const urlImg = producto.imagen_portada
+    ? resolverUrlRecurso(producto.imagen_portada)
+    : imagenLocalProducto(producto.nombre);
+
+  if (urlImg) {
     const img = document.createElement("img");
-  img.src = `https://mil-variedades.onrender.com${producto.imagen_portada}`;
+    img.src = urlImg;
     img.alt = producto.nombre;
     img.loading = "lazy";
+    img.decoding = "async";
     imgWrap.appendChild(img);
   } else {
     const colorCategoria = colorParaCategoria(producto.id_categoria);
@@ -300,6 +333,23 @@ function crearTarjetaProducto(producto) {
     circulo.appendChild(icono);
     imgWrap.appendChild(circulo);
   }
+
+  // Sticker de categoría (calcomanía roja/color de categoría)
+  const sticker = document.createElement("span");
+  sticker.className = "producto-sticker";
+  sticker.style.background = colorParaCategoria(producto.id_categoria);
+  sticker.textContent = producto.categoria || "Variedades";
+  imgWrap.appendChild(sticker);
+
+  // Píldora de disponibilidad "En Bodega La Ceja"
+  const bodega = document.createElement("span");
+  bodega.className = "producto-bodega";
+  const punto = document.createElement("i");
+  punto.className = "fa-solid fa-circle";
+  bodega.appendChild(punto);
+  bodega.appendChild(document.createTextNode(" En Bodega La Ceja"));
+  imgWrap.appendChild(bodega);
+
   tarjeta.appendChild(imgWrap);
 
   const info = document.createElement("div");
@@ -322,21 +372,27 @@ function crearTarjetaProducto(producto) {
 
   const botones = document.createElement("div");
   botones.className = "producto-botones";
+
+  // 1) Botón rojo "Agregar al pedido" (definido en carrito.js, cargado después
+  // de este archivo). El chequeo evita que la página se rompa si carrito.js
+  // no llegó a cargar por algún motivo.
+  if (typeof crearBotonAgregarCarrito === "function") {
+    botones.appendChild(crearBotonAgregarCarrito(producto));
+  }
+
+  // 2) Botón cuadrado verde de WhatsApp (solo ícono)
   const btnWsp = document.createElement("a");
   btnWsp.className = "btn-comprar-wsp";
   btnWsp.href = construirEnlaceWhatsapp(`Hola, quiero más información sobre: ${producto.nombre}`);
   btnWsp.target = "_blank";
   btnWsp.rel = "noopener";
-  btnWsp.textContent = "Preguntar por WhatsApp";
+  btnWsp.setAttribute("aria-label", `Preguntar por WhatsApp sobre ${producto.nombre}`);
+  btnWsp.title = "Preguntar por WhatsApp";
+  const iconoWsp = document.createElement("i");
+  iconoWsp.className = "fa-brands fa-whatsapp";
+  btnWsp.appendChild(iconoWsp);
   btnWsp.addEventListener("click", (evento) => evento.stopPropagation()); // no abrir el modal al usar este botón
   botones.appendChild(btnWsp);
-
-  // Botón "Agregar al pedido" (definido en carrito.js, cargado después de
-  // este archivo). El chequeo evita que la página se rompa si carrito.js
-  // no llegó a cargar por algún motivo.
-  if (typeof crearBotonAgregarCarrito === "function") {
-    botones.appendChild(crearBotonAgregarCarrito(producto));
-  }
 
   info.appendChild(botones);
 
@@ -367,6 +423,7 @@ function activarBusqueda() {
   const sugerenciasWrap = document.getElementById("buscador-sugerencias");
   let yaHizoScroll = false;
   let temporizadorSugerencias = null;
+  const cacheSugerencias = new Map();
 
   input.addEventListener("input", () => {
     const termino = input.value.trim().toLowerCase();
@@ -377,7 +434,7 @@ function activarBusqueda() {
     renderizarProductos(filtrados);
 
     clearTimeout(temporizadorSugerencias);
-    temporizadorSugerencias = setTimeout(() => actualizarSugerencias(termino), 200);
+    temporizadorSugerencias = setTimeout(() => actualizarSugerencias(termino), 320);
 
     if (termino && !yaHizoScroll) {
       yaHizoScroll = true;
@@ -389,7 +446,7 @@ function activarBusqueda() {
   });
 
   input.addEventListener("focus", () => {
-    if (input.value.trim()) sugerenciasWrap.classList.add("abierto");
+    if (input.value.trim().length >= 2) sugerenciasWrap.classList.add("abierto");
   });
 
   input.addEventListener("keydown", (evento) => {
@@ -405,13 +462,22 @@ function activarBusqueda() {
 
   async function actualizarSugerencias(termino) {
     if (!sugerenciasWrap) return;
-    if (!termino) {
+    if (!termino || termino.length < 2) {
       cerrarSugerencias();
       return;
     }
 
     try {
-      const { productos, paginacion } = await api.obtenerProductos({ busqueda: termino, limit: 6, page: 1 });
+      let respuesta = cacheSugerencias.get(termino);
+      if (!respuesta) {
+        respuesta = await api.obtenerProductos({ busqueda: termino, limit: 6, page: 1 });
+        if (cacheSugerencias.size >= 10) {
+          const primeraClave = cacheSugerencias.keys().next().value;
+          cacheSugerencias.delete(primeraClave);
+        }
+        cacheSugerencias.set(termino, respuesta);
+      }
+      const { productos, paginacion } = respuesta;
       sugerenciasWrap.innerHTML = "";
 
       if (productos.length === 0) {
@@ -514,7 +580,7 @@ async function abrirModalProducto(idProducto) {
       imagenWrap.appendChild(icono);
     } else {
       const imgPrincipal = document.createElement("img");
-      imgPrincipal.src = `https://mil-variedades.onrender.com${imagenes[0].url_imagen}`;
+      imgPrincipal.src = resolverUrlRecurso(imagenes[0].url_imagen);
       imgPrincipal.alt = producto.nombre;
       imagenWrap.appendChild(imgPrincipal);
 
@@ -528,7 +594,7 @@ async function abrirModalProducto(idProducto) {
           punto.className = indice === 0 ? "activo" : "";
           punto.setAttribute("aria-label", `Ver foto ${indice + 1}`);
           punto.addEventListener("click", () => {
-         imgPrincipal.src = `https://mil-variedades.onrender.com${imagen.url_imagen}`;
+            imgPrincipal.src = resolverUrlRecurso(imagen.url_imagen);
             dots.querySelectorAll("button").forEach((b) => b.classList.remove("activo"));
             punto.classList.add("activo");
           });
@@ -610,9 +676,19 @@ function activarSidebar() {
 // ---------- Volver arriba ----------
 function activarScrollTop() {
   const boton = document.getElementById("btn-scroll-top");
-  window.addEventListener("scroll", () => {
-    boton.classList.toggle("visible", window.scrollY > 500);
-  });
+  if (!boton) return;
+  let visible = false;
+  window.addEventListener(
+    "scroll",
+    () => {
+      const debeSerVisible = window.scrollY > 500;
+      if (debeSerVisible !== visible) {
+        visible = debeSerVisible;
+        boton.classList.toggle("visible", visible);
+      }
+    },
+    { passive: true }
+  );
   boton.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 }
 
@@ -655,7 +731,7 @@ function activarScrollReveal() {
     const padre = el.parentElement;
     const posicion = contadorPorPadre.get(padre) || 0;
     contadorPorPadre.set(padre, posicion + 1);
-    const retraso = Math.min(posicion, 8) * 70; // tope de 8 para no demorar grids muy grandes
+    const retraso = Math.min(posicion, 5) * 35;
     el.style.transitionDelay = `${retraso}ms`;
   });
 
@@ -663,8 +739,12 @@ function activarScrollReveal() {
     (entradas) => {
       entradas.forEach((entrada) => {
         if (entrada.isIntersecting) {
-          entrada.target.classList.add("reveal-visible");
-          observador.unobserve(entrada.target);
+          const target = entrada.target;
+          target.classList.add("reveal-visible");
+          observador.unobserve(target);
+          setTimeout(() => {
+            target.style.transitionDelay = "";
+          }, 300);
         }
       });
     },
@@ -672,4 +752,176 @@ function activarScrollReveal() {
   );
 
   elementos.forEach((el) => observador.observe(el));
+}
+
+// ---------- Sesión de cliente en el Header (mv_cliente_activo) ----------
+function obtenerClienteActivoTienda() {
+  try {
+    const raw = localStorage.getItem("mv_cliente_activo");
+    if (!raw) return null;
+    const datos = JSON.parse(raw);
+    if (!datos || typeof datos !== "object" || !datos.correo) return null;
+    return datos;
+  } catch (_err) {
+    return null;
+  }
+}
+
+function inicializarSesionClienteHeader() {
+  const btn = document.querySelector(".btn-login-header");
+  if (!btn) return;
+
+  const cliente = obtenerClienteActivoTienda();
+  btn.textContent = "";
+
+  if (!cliente) {
+    btn.classList.remove("cliente-logueado");
+    btn.href = "login.html";
+    btn.setAttribute("aria-label", "Iniciar sesión");
+    btn.removeAttribute("title");
+    btn.onclick = null;
+
+    const icono = document.createElement("i");
+    icono.className = "fa-solid fa-user";
+    btn.appendChild(icono);
+
+    const span = document.createElement("span");
+    span.textContent = "Iniciar sesión";
+    btn.appendChild(span);
+    return;
+  }
+
+  const primerNombre =
+    cliente.nombre ||
+    (cliente.nombreCompleto ? String(cliente.nombreCompleto).split(" ")[0] : "Cliente");
+
+  btn.classList.add("cliente-logueado");
+  btn.href = "#";
+  btn.setAttribute("aria-label", `Cuenta de ${primerNombre}`);
+  btn.setAttribute("title", `${cliente.nombreCompleto || primerNombre} (${cliente.correo})`);
+
+  if (cliente.foto) {
+    const img = document.createElement("img");
+    img.className = "cliente-avatar-img";
+    img.src = cliente.foto;
+    img.alt = primerNombre;
+    img.referrerPolicy = "no-referrer";
+    img.addEventListener("error", () => {
+      const fallback = document.createElement("i");
+      fallback.className = "fa-solid fa-user-check";
+      img.replaceWith(fallback);
+    });
+    btn.appendChild(img);
+  } else {
+    const icono = document.createElement("i");
+    icono.className = "fa-solid fa-user-check";
+    btn.appendChild(icono);
+  }
+
+  const spanNombre = document.createElement("span");
+  spanNombre.className = "cliente-nombre-header";
+  spanNombre.textContent = primerNombre;
+  btn.appendChild(spanNombre);
+
+  btn.onclick = (evento) => {
+    evento.preventDefault();
+    abrirModalPerfilClienteActivo(cliente);
+  };
+}
+
+function abrirModalPerfilClienteActivo(cliente) {
+  let overlay = document.getElementById("google-auth-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "google-auth-overlay";
+    overlay.className = "google-auth-overlay";
+    overlay.addEventListener("click", cerrarModalPerfilClienteActivo);
+    document.body.appendChild(overlay);
+  }
+
+  let modal = document.getElementById("google-auth-modal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "google-auth-modal";
+    modal.className = "google-auth-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    document.body.appendChild(modal);
+  }
+
+  modal.textContent = "";
+
+  const btnCerrar = document.createElement("button");
+  btnCerrar.type = "button";
+  btnCerrar.className = "google-auth-cerrar";
+  btnCerrar.setAttribute("aria-label", "Cerrar");
+  btnCerrar.textContent = "×";
+  btnCerrar.addEventListener("click", cerrarModalPerfilClienteActivo);
+  modal.appendChild(btnCerrar);
+
+  const cuerpo = document.createElement("div");
+  cuerpo.className = "google-auth-cuerpo";
+
+  const badge = document.createElement("span");
+  badge.className = "google-auth-badge";
+  badge.textContent = "Cuenta de Cliente";
+  cuerpo.appendChild(badge);
+
+  if (cliente.foto) {
+    const foto = document.createElement("img");
+    foto.className = "google-perfil-foto";
+    foto.src = cliente.foto;
+    foto.alt = cliente.nombreCompleto || "Cliente";
+    foto.referrerPolicy = "no-referrer";
+    foto.addEventListener("error", () => {
+      foto.style.display = "none";
+    });
+    cuerpo.appendChild(foto);
+  }
+
+  const saludo = document.createElement("h3");
+  saludo.textContent = `¡Hola, ${cliente.nombreCompleto || cliente.nombre}!`;
+  cuerpo.appendChild(saludo);
+
+  const correo = document.createElement("p");
+  correo.className = "google-perfil-correo";
+  correo.textContent = cliente.telefono
+    ? `${cliente.correo} · ${cliente.telefono}`
+    : cliente.correo;
+  cuerpo.appendChild(correo);
+
+  const nota = document.createElement("p");
+  nota.className = "google-perfil-nota";
+  nota.textContent =
+    "Tus datos se incluirán automáticamente al enviar tu pedido por WhatsApp.";
+  cuerpo.appendChild(nota);
+
+  const btnSalir = document.createElement("button");
+  btnSalir.type = "button";
+  btnSalir.className = "btn-cerrar-sesion-google";
+  btnSalir.textContent = "Cerrar sesión";
+  btnSalir.addEventListener("click", () => {
+    try {
+      localStorage.removeItem("mv_cliente_activo");
+    } catch (_err) {
+      // Ignorar
+    }
+    cerrarModalPerfilClienteActivo();
+    inicializarSesionClienteHeader();
+    if (typeof renderizarCarrito === "function") {
+      renderizarCarrito();
+    }
+  });
+  cuerpo.appendChild(btnSalir);
+
+  modal.appendChild(cuerpo);
+  overlay.classList.add("abierto");
+  modal.classList.add("abierto");
+}
+
+function cerrarModalPerfilClienteActivo() {
+  const overlay = document.getElementById("google-auth-overlay");
+  const modal = document.getElementById("google-auth-modal");
+  if (overlay) overlay.classList.remove("abierto");
+  if (modal) modal.classList.remove("abierto");
 }

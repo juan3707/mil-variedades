@@ -8,8 +8,8 @@
 // Regla del proyecto: nunca innerHTML con datos del backend (evita XSS).
 // ============================================================
 
-let numeroWhatsapp = "";
-let mensajeWhatsappDefault = "";
+let numeroWhatsapp = "573218106700";
+let mensajeWhatsappDefault = "Hola, estoy interesado en un producto de Mil Variedades";
 let productosCargados = []; // SOLO la página actual, no todo el catálogo
 let productoModalActual = null;
 let categoriasCargadas = [];
@@ -64,8 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   cargarConfiguracion();
-  cargarCategorias();
-  cargarProductos();
+  inicializarSesionClienteHeader();
+  cargarCategorias().then(() => cargarProductos());
   activarSidebar();
   activarPanelFiltros();
   activarBusqueda();
@@ -75,20 +75,31 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function cargarConfiguracion() {
-  try {
-    const config = await api.obtenerConfig();
-    const numeroConfig = config.find((c) => c.nombre === "whatsapp_numero");
-    const mensajeConfig = config.find((c) => c.nombre === "whatsapp_mensaje_default");
-    numeroWhatsapp = numeroConfig ? numeroConfig.valor : "";
-    mensajeWhatsappDefault = mensajeConfig ? mensajeConfig.valor : "Hola, estoy interesado en un producto de Mil Variedades";
+  numeroWhatsapp = "573218106700";
+  const footerNumero = document.getElementById("footer-numero");
+  if (footerNumero) footerNumero.textContent = "321 810 6700";
 
+  const actualizarEnlaces = () => {
     const enlace = construirEnlaceWhatsapp();
     ["btn-whatsapp-header", "whatsapp-flotante", "sidebar-whatsapp", "footer-whatsapp"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.href = enlace;
     });
-    const footerNumero = document.getElementById("footer-numero");
-    if (footerNumero) footerNumero.textContent = numeroWhatsapp ? `+${numeroWhatsapp}` : "";
+    document.querySelectorAll("[data-whatsapp-link]").forEach((el) => {
+      const msg = el.getAttribute("data-whatsapp-msg");
+      el.href = msg ? construirEnlaceWhatsapp(msg) : enlace;
+    });
+  };
+
+  actualizarEnlaces();
+
+  try {
+    const config = await api.obtenerConfig();
+    const mensajeConfig = config.find((c) => c.nombre === "whatsapp_mensaje_default");
+    if (mensajeConfig && mensajeConfig.valor) {
+      mensajeWhatsappDefault = mensajeConfig.valor;
+      actualizarEnlaces();
+    }
   } catch (error) {
     console.error("No se pudo cargar la configuración:", error.message);
   }
@@ -326,6 +337,15 @@ function irAPagina(numero) {
   if (resultados) resultados.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function imagenLocalProducto(nombre) {
+  const n = (nombre || "").toLowerCase();
+  if (n.includes("norma") || n.includes("cuaderno")) return "../assets/img/productos/norma.jpg";
+  if (n.includes("lapicero") || n.includes("faber")) return "../assets/img/productos/lapicero_negro_faber.jpg";
+  if (n.includes("resaltador") || n.includes("stabilo")) return "../assets/img/productos/stabilo_resaltadorx4.jpg";
+  if (n.includes("detergente") || n.includes("fab")) return "../assets/img/productos/FAB_liquido.jpg";
+  return "";
+}
+
 function crearTarjetaProducto(producto) {
   const tarjeta = document.createElement("article");
   tarjeta.className = "producto-card";
@@ -333,11 +353,16 @@ function crearTarjetaProducto(producto) {
 
   const imgWrap = document.createElement("div");
   imgWrap.className = "producto-img";
-  if (producto.imagen_portada) {
+  const urlImg = producto.imagen_portada
+    ? resolverUrlRecurso(producto.imagen_portada)
+    : imagenLocalProducto(producto.nombre);
+
+  if (urlImg) {
     const img = document.createElement("img");
-    img.src = `http://localhost:4000${producto.imagen_portada}`;
+    img.src = urlImg;
     img.alt = producto.nombre;
     img.loading = "lazy";
+    img.decoding = "async";
     imgWrap.appendChild(img);
   } else {
     const colorCategoria = colorParaCategoria(producto.id_categoria);
@@ -350,6 +375,23 @@ function crearTarjetaProducto(producto) {
     circulo.appendChild(icono);
     imgWrap.appendChild(circulo);
   }
+
+  // Sticker de categoría (calcomanía roja/color de categoría)
+  const sticker = document.createElement("span");
+  sticker.className = "producto-sticker";
+  sticker.style.background = colorParaCategoria(producto.id_categoria);
+  sticker.textContent = producto.categoria || "Variedades";
+  imgWrap.appendChild(sticker);
+
+  // Píldora de disponibilidad "En Bodega La Ceja"
+  const bodega = document.createElement("span");
+  bodega.className = "producto-bodega";
+  const punto = document.createElement("i");
+  punto.className = "fa-solid fa-circle";
+  bodega.appendChild(punto);
+  bodega.appendChild(document.createTextNode(" En Bodega La Ceja"));
+  imgWrap.appendChild(bodega);
+
   tarjeta.appendChild(imgWrap);
 
   const info = document.createElement("div");
@@ -372,21 +414,27 @@ function crearTarjetaProducto(producto) {
 
   const botones = document.createElement("div");
   botones.className = "producto-botones";
+
+  // 1) Botón rojo "Agregar al pedido" (definido en carrito.js, cargado después
+  // de este archivo). El chequeo evita que la página se rompa si carrito.js
+  // no llegó a cargar por algún motivo.
+  if (typeof crearBotonAgregarCarrito === "function") {
+    botones.appendChild(crearBotonAgregarCarrito(producto));
+  }
+
+  // 2) Botón cuadrado verde de WhatsApp (solo ícono)
   const btnWsp = document.createElement("a");
   btnWsp.className = "btn-comprar-wsp";
   btnWsp.href = construirEnlaceWhatsapp(`Hola, quiero más información sobre: ${producto.nombre}`);
   btnWsp.target = "_blank";
   btnWsp.rel = "noopener";
-  btnWsp.textContent = "Preguntar por WhatsApp";
+  btnWsp.setAttribute("aria-label", `Preguntar por WhatsApp sobre ${producto.nombre}`);
+  btnWsp.title = "Preguntar por WhatsApp";
+  const iconoWsp = document.createElement("i");
+  iconoWsp.className = "fa-brands fa-whatsapp";
+  btnWsp.appendChild(iconoWsp);
   btnWsp.addEventListener("click", (evento) => evento.stopPropagation());
   botones.appendChild(btnWsp);
-
-  // Botón "Agregar al pedido" (definido en carrito.js, cargado después de
-  // este archivo). El chequeo evita que la página se rompa si carrito.js
-  // no llegó a cargar por algún motivo.
-  if (typeof crearBotonAgregarCarrito === "function") {
-    botones.appendChild(crearBotonAgregarCarrito(producto));
-  }
 
   info.appendChild(botones);
 
@@ -416,19 +464,20 @@ function activarBusqueda() {
   let yaHizoScroll = false;
   let temporizadorSugerencias = null;
   let temporizadorResultados = null;
+  const cacheSugerencias = new Map();
 
   input.addEventListener("input", () => {
     const valor = input.value.trim();
 
     clearTimeout(temporizadorSugerencias);
-    temporizadorSugerencias = setTimeout(() => actualizarSugerencias(valor), 200);
+    temporizadorSugerencias = setTimeout(() => actualizarSugerencias(valor), 320);
 
     clearTimeout(temporizadorResultados);
     temporizadorResultados = setTimeout(() => {
       terminoBusqueda = valor.toLowerCase();
       paginaActual = 1;
       cargarProductos();
-    }, 400);
+    }, 450);
 
     if (valor && !yaHizoScroll) {
       yaHizoScroll = true;
@@ -440,7 +489,7 @@ function activarBusqueda() {
   });
 
   input.addEventListener("focus", () => {
-    if (input.value.trim()) sugerenciasWrap.classList.add("abierto");
+    if (input.value.trim().length >= 2) sugerenciasWrap.classList.add("abierto");
   });
 
   input.addEventListener("keydown", (evento) => {
@@ -456,13 +505,23 @@ function activarBusqueda() {
 
   async function actualizarSugerencias(termino) {
     if (!sugerenciasWrap) return;
-    if (!termino) {
+    const clave = termino.toLowerCase();
+    if (!clave || clave.length < 2) {
       cerrarSugerencias();
       return;
     }
 
     try {
-      const { productos, paginacion } = await api.obtenerProductos({ busqueda: termino, limit: 6, page: 1 });
+      let respuesta = cacheSugerencias.get(clave);
+      if (!respuesta) {
+        respuesta = await api.obtenerProductos({ busqueda: termino, limit: 6, page: 1 });
+        if (cacheSugerencias.size >= 10) {
+          const primeraClave = cacheSugerencias.keys().next().value;
+          cacheSugerencias.delete(primeraClave);
+        }
+        cacheSugerencias.set(clave, respuesta);
+      }
+      const { productos, paginacion } = respuesta;
       sugerenciasWrap.innerHTML = "";
 
       if (productos.length === 0) {
@@ -572,7 +631,7 @@ async function abrirModalProducto(idProducto) {
     const primeraImagen = producto.imagenes && producto.imagenes.length > 0 ? producto.imagenes[0] : null;
     if (primeraImagen) {
       const img = document.createElement("img");
-      img.src = `http://localhost:4000${primeraImagen.url_imagen}`;
+      img.src = resolverUrlRecurso(primeraImagen.url_imagen);
       img.alt = producto.nombre;
       imagenWrap.appendChild(img);
     } else {
@@ -639,6 +698,190 @@ function activarSidebar() {
 
 function activarScrollTop() {
   const boton = document.getElementById("btn-scroll-top");
-  window.addEventListener("scroll", () => boton.classList.toggle("visible", window.scrollY > 500));
+  if (!boton) return;
+  let visible = false;
+  window.addEventListener(
+    "scroll",
+    () => {
+      const debeSerVisible = window.scrollY > 500;
+      if (debeSerVisible !== visible) {
+        visible = debeSerVisible;
+        boton.classList.toggle("visible", visible);
+      }
+    },
+    { passive: true }
+  );
   boton.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+}
+
+// ---------- Sesión de cliente en el Header (mv_cliente_activo) ----------
+function obtenerClienteActivoTienda() {
+  try {
+    const raw = localStorage.getItem("mv_cliente_activo");
+    if (!raw) return null;
+    const datos = JSON.parse(raw);
+    if (!datos || typeof datos !== "object" || !datos.correo) return null;
+    return datos;
+  } catch (_err) {
+    return null;
+  }
+}
+
+function inicializarSesionClienteHeader() {
+  const btn = document.querySelector(".btn-login-header");
+  if (!btn) return;
+
+  const cliente = obtenerClienteActivoTienda();
+  btn.textContent = "";
+
+  if (!cliente) {
+    btn.classList.remove("cliente-logueado");
+    btn.href = "login.html";
+    btn.setAttribute("aria-label", "Iniciar sesión");
+    btn.removeAttribute("title");
+    btn.onclick = null;
+
+    const icono = document.createElement("i");
+    icono.className = "fa-solid fa-user";
+    btn.appendChild(icono);
+
+    const span = document.createElement("span");
+    span.textContent = "Iniciar sesión";
+    btn.appendChild(span);
+    return;
+  }
+
+  const primerNombre =
+    cliente.nombre ||
+    (cliente.nombreCompleto ? String(cliente.nombreCompleto).split(" ")[0] : "Cliente");
+
+  btn.classList.add("cliente-logueado");
+  btn.href = "#";
+  btn.setAttribute("aria-label", `Cuenta de ${primerNombre}`);
+  btn.setAttribute("title", `${cliente.nombreCompleto || primerNombre} (${cliente.correo})`);
+
+  if (cliente.foto) {
+    const img = document.createElement("img");
+    img.className = "cliente-avatar-img";
+    img.src = cliente.foto;
+    img.alt = primerNombre;
+    img.referrerPolicy = "no-referrer";
+    img.addEventListener("error", () => {
+      const fallback = document.createElement("i");
+      fallback.className = "fa-solid fa-user-check";
+      img.replaceWith(fallback);
+    });
+    btn.appendChild(img);
+  } else {
+    const icono = document.createElement("i");
+    icono.className = "fa-solid fa-user-check";
+    btn.appendChild(icono);
+  }
+
+  const spanNombre = document.createElement("span");
+  spanNombre.className = "cliente-nombre-header";
+  spanNombre.textContent = primerNombre;
+  btn.appendChild(spanNombre);
+
+  btn.onclick = (evento) => {
+    evento.preventDefault();
+    abrirModalPerfilClienteActivo(cliente);
+  };
+}
+
+function abrirModalPerfilClienteActivo(cliente) {
+  let overlay = document.getElementById("google-auth-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "google-auth-overlay";
+    overlay.className = "google-auth-overlay";
+    overlay.addEventListener("click", cerrarModalPerfilClienteActivo);
+    document.body.appendChild(overlay);
+  }
+
+  let modal = document.getElementById("google-auth-modal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "google-auth-modal";
+    modal.className = "google-auth-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    document.body.appendChild(modal);
+  }
+
+  modal.textContent = "";
+
+  const btnCerrar = document.createElement("button");
+  btnCerrar.type = "button";
+  btnCerrar.className = "google-auth-cerrar";
+  btnCerrar.setAttribute("aria-label", "Cerrar");
+  btnCerrar.textContent = "×";
+  btnCerrar.addEventListener("click", cerrarModalPerfilClienteActivo);
+  modal.appendChild(btnCerrar);
+
+  const cuerpo = document.createElement("div");
+  cuerpo.className = "google-auth-cuerpo";
+
+  const badge = document.createElement("span");
+  badge.className = "google-auth-badge";
+  badge.textContent = "Cuenta de Cliente";
+  cuerpo.appendChild(badge);
+
+  if (cliente.foto) {
+    const foto = document.createElement("img");
+    foto.className = "google-perfil-foto";
+    foto.src = cliente.foto;
+    foto.alt = cliente.nombreCompleto || "Cliente";
+    foto.referrerPolicy = "no-referrer";
+    foto.addEventListener("error", () => {
+      foto.style.display = "none";
+    });
+    cuerpo.appendChild(foto);
+  }
+
+  const saludo = document.createElement("h3");
+  saludo.textContent = `¡Hola, ${cliente.nombreCompleto || cliente.nombre}!`;
+  cuerpo.appendChild(saludo);
+
+  const correo = document.createElement("p");
+  correo.className = "google-perfil-correo";
+  correo.textContent = cliente.telefono
+    ? `${cliente.correo} · ${cliente.telefono}`
+    : cliente.correo;
+  cuerpo.appendChild(correo);
+
+  const nota = document.createElement("p");
+  nota.className = "google-perfil-nota";
+  nota.textContent =
+    "Tus datos se incluirán automáticamente al enviar tu pedido por WhatsApp.";
+  cuerpo.appendChild(nota);
+
+  const btnSalir = document.createElement("button");
+  btnSalir.type = "button";
+  btnSalir.className = "btn-cerrar-sesion-google";
+  btnSalir.textContent = "Cerrar sesión";
+  btnSalir.addEventListener("click", () => {
+    try {
+      localStorage.removeItem("mv_cliente_activo");
+    } catch (_err) {
+      // Ignorar
+    }
+    cerrarModalPerfilClienteActivo();
+    inicializarSesionClienteHeader();
+    if (typeof renderizarCarrito === "function") {
+      renderizarCarrito();
+    }
+  });
+  cuerpo.appendChild(btnSalir);
+
+  modal.appendChild(cuerpo);
+  overlay.classList.add("abierto");
+  modal.classList.add("abierto");
+}
+
+function cerrarModalPerfilClienteActivo() {
+  const overlay = document.getElementById("google-auth-overlay");
+  const modal = document.getElementById("google-auth-modal");
+  if (overlay) overlay.classList.remove("abierto");
+  if (modal) modal.classList.remove("abierto");
 }

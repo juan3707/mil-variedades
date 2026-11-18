@@ -1,35 +1,116 @@
-// Un solo lugar para saber dónde vive el backend. Cuando despleguemos
-// en producción (Agente 8), esta es la ÚNICA línea que hay que cambiar.
-const API_BASE_URL = "https://mil-variedades.onrender.com/api";
+// Resolución dinámica del origen del backend según el entorno (Local vs Vercel):
+const ES_LOCAL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const API_BASE_URL = ES_LOCAL ? "http://localhost:4000" : "";
+const API_URL = `${API_BASE_URL}/api`;
+
+function resolverUrlRecurso(rutaRelativa) {
+  if (!rutaRelativa) return "";
+  if (/^https?:\/\//i.test(rutaRelativa) || rutaRelativa.startsWith("data:")) {
+    return rutaRelativa;
+  }
+  const rutaNormalizada = rutaRelativa.startsWith("/") ? rutaRelativa : `/${rutaRelativa}`;
+  return `${API_BASE_URL}${rutaNormalizada}`;
+}
+
+// ---------- Caché de sesión (TTL 5 min) + Memoria + Deduplicación ----------
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const cacheDetalleProducto = new Map();
+const inFlightRequests = new Map();
+
+function leerCacheSesion(clave) {
+  try {
+    const raw = sessionStorage.getItem(clave);
+    if (!raw) return null;
+    const registro = JSON.parse(raw);
+    if (!registro || Date.now() - registro.ts > CACHE_TTL_MS) {
+      sessionStorage.removeItem(clave);
+      return null;
+    }
+    return registro.data;
+  } catch (error) {
+    return null;
+  }
+}
+
+function guardarCacheSesion(clave, data) {
+  try {
+    sessionStorage.setItem(clave, JSON.stringify({ ts: Date.now(), data }));
+  } catch (error) {
+    // Si sessionStorage está lleno o bloqueado, continúa sin fallar
+  }
+}
+
+function limpiarCacheCatalogo() {
+  cacheDetalleProducto.clear();
+  try {
+    sessionStorage.removeItem("mv_cache_categorias");
+    sessionStorage.removeItem("mv_cache_conteos_cat");
+  } catch (error) {
+    // Ignorar errores de almacenamiento
+  }
+}
 
 /**
  * Wrapper de fetch: arma la URL completa, parsea el JSON, y lanza un
  * error legible si algo sale mal — así cada función que lo use no
  * tiene que repetir el mismo try/catch de bajo nivel.
+ * Incluye deduplicación de peticiones GET en vuelo (inFlightRequests).
  */
 async function apiFetch(ruta, opciones = {}) {
-  const respuesta = await fetch(`${API_BASE_URL}${ruta}`, opciones);
-  const datos = await respuesta.json();
+  const metodo = (opciones.method || "GET").toUpperCase();
+  const claveVuelo = metodo === "GET" ? `data:${ruta}` : null;
 
-  if (!respuesta.ok || datos.success === false) {
-    throw new Error(datos.message || "Error al conectar con el servidor");
+  if (claveVuelo && inFlightRequests.has(claveVuelo)) {
+    return inFlightRequests.get(claveVuelo);
   }
 
-  return datos.data;
+  const promesa = (async () => {
+    const respuesta = await fetch(`${API_URL}${ruta}`, opciones);
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok || datos.success === false) {
+      throw new Error(datos.message || "Error al conectar con el servidor");
+    }
+
+    return datos.data;
+  })();
+
+  if (claveVuelo) {
+    inFlightRequests.set(claveVuelo, promesa);
+    promesa.finally(() => inFlightRequests.delete(claveVuelo));
+  }
+
+  return promesa;
 }
 
 // Igual que apiFetch, pero devuelve la respuesta COMPLETA en vez de solo
 // "data" — lo necesitamos en /productos porque ahí el backend también
 // manda un bloque "paginacion" al lado de "data".
 async function apiFetchCompleto(ruta, opciones = {}) {
-  const respuesta = await fetch(`${API_BASE_URL}${ruta}`, opciones);
-  const datos = await respuesta.json();
+  const metodo = (opciones.method || "GET").toUpperCase();
+  const claveVuelo = metodo === "GET" ? `full:${ruta}` : null;
 
-  if (!respuesta.ok || datos.success === false) {
-    throw new Error(datos.message || "Error al conectar con el servidor");
+  if (claveVuelo && inFlightRequests.has(claveVuelo)) {
+    return inFlightRequests.get(claveVuelo);
   }
 
-  return datos;
+  const promesa = (async () => {
+    const respuesta = await fetch(`${API_URL}${ruta}`, opciones);
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok || datos.success === false) {
+      throw new Error(datos.message || "Error al conectar con el servidor");
+    }
+
+    return datos;
+  })();
+
+  if (claveVuelo) {
+    inFlightRequests.set(claveVuelo, promesa);
+    promesa.finally(() => inFlightRequests.delete(claveVuelo));
+  }
+
+  return promesa;
 }
 
 // Arma un query string a partir de un objeto, ignorando valores
@@ -54,9 +135,30 @@ const api = {
     const datos = await apiFetchCompleto(`/productos${query}`);
     return { productos: datos.data, paginacion: datos.paginacion || null };
   },
-  obtenerProducto: (id) => apiFetch(`/productos/${id}`),
-  obtenerCategorias: () => apiFetch("/categorias"),
-  obtenerConfig: () => apiFetch("/config"),
+  obtenerProducto: async (id) => {
+    const clave = String(id);
+    const enMemoria = cacheDetalleProducto.get(clave);
+    if (enMemoria && Date.now() - enMemoria.ts <= CACHE_TTL_MS) {
+      return enMemoria.data;
+    }
+    const data = await apiFetch(`/productos/${id}`);
+    cacheDetalleProducto.set(clave, { ts: Date.now(), data });
+    return data;
+  },
+  obtenerCategorias: async () => {
+    const cacheado = leerCacheSesion("mv_cache_categorias");
+    if (cacheado) return cacheado;
+    const data = await apiFetch("/categorias");
+    guardarCacheSesion("mv_cache_categorias", data);
+    return data;
+  },
+  obtenerConfig: async () => {
+    const cacheado = leerCacheSesion("mv_cache_config");
+    if (cacheado) return cacheado;
+    const data = await apiFetch("/config");
+    guardarCacheSesion("mv_cache_config", data);
+    return data;
+  },
   // Devuelve { token, usuario: { id_usuario, nombre, correo, rol } } —
   // mismo patrón apiFetch que el resto (lanza error con el mensaje del
   // backend si las credenciales son incorrectas).
@@ -68,63 +170,94 @@ const api = {
     }),
 
   // ---------- Panel administrativo (rutas protegidas) ----------
-  // Todas agregan el token guardado vía encabezadosAutenticados(). Si el
-  // token falta o venció, el backend responde 401/403 con su mensaje de
-  // siempre — apiFetch lo lanza como error normal, y panel.js decide qué
-  // hacer con eso (ver manejarErrorSesion).
-  crearProducto: (datos) =>
-    apiFetch("/productos", {
+  // Todas agregan el token guardado vía encabezadosAutenticados() e
+  // invalidan la caché local al completarse para reflejar cambios al instante.
+  crearProducto: async (datos) => {
+    const res = await apiFetch("/productos", {
       method: "POST",
       headers: encabezadosAutenticados({ "Content-Type": "application/json" }),
       body: JSON.stringify(datos),
-    }),
-  actualizarProducto: (id, datos) =>
-    apiFetch(`/productos/${id}`, {
+    });
+    limpiarCacheCatalogo();
+    return res;
+  },
+  actualizarProducto: async (id, datos) => {
+    const res = await apiFetch(`/productos/${id}`, {
       method: "PUT",
       headers: encabezadosAutenticados({ "Content-Type": "application/json" }),
       body: JSON.stringify(datos),
-    }),
-  eliminarProducto: (id) =>
-    apiFetch(`/productos/${id}`, { method: "DELETE", headers: encabezadosAutenticados() }),
-  actualizarStock: (id, cantidad) =>
-    apiFetch(`/productos/${id}/stock`, {
+    });
+    limpiarCacheCatalogo();
+    return res;
+  },
+  eliminarProducto: async (id) => {
+    const res = await apiFetch(`/productos/${id}`, {
+      method: "DELETE",
+      headers: encabezadosAutenticados(),
+    });
+    limpiarCacheCatalogo();
+    return res;
+  },
+  actualizarStock: async (id, cantidad) => {
+    const res = await apiFetch(`/productos/${id}/stock`, {
       method: "PUT",
       headers: encabezadosAutenticados({ "Content-Type": "application/json" }),
       body: JSON.stringify({ cantidad }),
-    }),
+    });
+    limpiarCacheCatalogo();
+    return res;
+  },
   // "archivo" es un File (el que sale de un <input type="file">). Nunca se
   // fija "Content-Type" a mano: el navegador arma el boundary correcto del
   // multipart/form-data solo si se lo dejamos.
-  subirImagenProducto: (idProducto, archivo) => {
+  subirImagenProducto: async (idProducto, archivo) => {
     const formulario = new FormData();
     formulario.append("imagen", archivo);
-    return apiFetch(`/productos/${idProducto}/imagenes`, {
+    const res = await apiFetch(`/productos/${idProducto}/imagenes`, {
       method: "POST",
       headers: encabezadosAutenticados(),
       body: formulario,
     });
+    limpiarCacheCatalogo();
+    return res;
   },
-  eliminarImagenProducto: (idImagen) =>
-    apiFetch(`/imagenes/${idImagen}`, { method: "DELETE", headers: encabezadosAutenticados() }),
-  crearCategoria: (datos) =>
-    apiFetch("/categorias", {
+  eliminarImagenProducto: async (idImagen) => {
+    const res = await apiFetch(`/imagenes/${idImagen}`, {
+      method: "DELETE",
+      headers: encabezadosAutenticados(),
+    });
+    limpiarCacheCatalogo();
+    return res;
+  },
+  crearCategoria: async (datos) => {
+    const res = await apiFetch("/categorias", {
       method: "POST",
       headers: encabezadosAutenticados({ "Content-Type": "application/json" }),
       body: JSON.stringify(datos),
-    }),
-  actualizarCategoria: (id, datos) =>
-    apiFetch(`/categorias/${id}`, {
+    });
+    limpiarCacheCatalogo();
+    return res;
+  },
+  actualizarCategoria: async (id, datos) => {
+    const res = await apiFetch(`/categorias/${id}`, {
       method: "PUT",
       headers: encabezadosAutenticados({ "Content-Type": "application/json" }),
       body: JSON.stringify(datos),
-    }),
-  eliminarCategoria: (id) =>
-    apiFetch(`/categorias/${id}`, { method: "DELETE", headers: encabezadosAutenticados() }),
+    });
+    limpiarCacheCatalogo();
+    return res;
+  },
+  eliminarCategoria: async (id) => {
+    const res = await apiFetch(`/categorias/${id}`, {
+      method: "DELETE",
+      headers: encabezadosAutenticados(),
+    });
+    limpiarCacheCatalogo();
+    return res;
+  },
 };
 
 // ---------- Sesión (Administrador / Super Administrador) ----------
-// Base de sesión para el futuro panel administrativo (todavía no
-// construido) — solo guarda/lee el token, no construye ninguna pantalla.
 const TOKEN_STORAGE_KEY = "mv_token";
 const USUARIO_STORAGE_KEY = "mv_usuario";
 
@@ -152,10 +285,6 @@ function cerrarSesion() {
   window.location.href = "login.html";
 }
 
-// Arma los headers para una petición protegida, agregando el token
-// guardado como Bearer. Si no hay token, la petición sale igual (sin
-// Authorization) y el backend la rechaza con 401 — no hay que duplicar
-// esa validación aquí.
 function encabezadosAutenticados(extra = {}) {
   const token = localStorage.getItem(TOKEN_STORAGE_KEY);
   return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;

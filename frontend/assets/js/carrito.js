@@ -100,8 +100,21 @@ function totalUnidadesCarrito() {
   return carrito.reduce((total, item) => total + item.cantidad, 0);
 }
 
-// ---------- Contador en el header ----------
+// ---------- Contador y subtotal en el header ----------
+function formatearSubtotalHeader(valor) {
+  if (!valor || valor <= 0) return "$0 COP";
+  if (typeof formateadorPrecio !== "undefined") {
+    return `${formateadorPrecio.format(valor)} COP`;
+  }
+  return `$${Number(valor).toLocaleString("es-CO")} COP`;
+}
+
 function actualizarContadorCarrito() {
+  const subtotalHeader = document.getElementById("carrito-subtotal-header");
+  if (subtotalHeader) {
+    subtotalHeader.textContent = formatearSubtotalHeader(totalCarrito());
+  }
+
   const contador = document.getElementById("carrito-contador");
   if (!contador) return;
   const total = totalUnidadesCarrito();
@@ -111,6 +124,11 @@ function actualizarContadorCarrito() {
 
 // ---------- Render del panel lateral ----------
 function renderizarCarrito() {
+  const subtotalHeader = document.getElementById("carrito-subtotal-header");
+  if (subtotalHeader) {
+    subtotalHeader.textContent = formatearSubtotalHeader(totalCarrito());
+  }
+
   const lista = document.getElementById("carrito-lista");
   const footer = document.getElementById("carrito-footer");
   if (!lista) return;
@@ -200,8 +218,21 @@ function construirEnlacePedidoWhatsapp() {
   const lineas = carrito.map(
     (item) => `• ${item.nombre} x${item.cantidad} — ${formateadorPrecio.format(item.precio * item.cantidad)}`
   );
+  let cliente = null;
+  try {
+    const raw = localStorage.getItem("mv_cliente_activo");
+    if (raw) cliente = JSON.parse(raw);
+  } catch (_err) {
+    cliente = null;
+  }
+
+  const encabezado =
+    cliente && cliente.correo
+      ? `Hola, soy *${cliente.nombreCompleto || cliente.nombre}* (Tel: ${cliente.telefono || "No registrado"} · ${cliente.correo}) y quiero hacer el siguiente pedido:\n\n`
+      : "Hola, quiero hacer el siguiente pedido:\n\n";
+
   const mensaje =
-    "Hola, quiero hacer el siguiente pedido:\n\n" +
+    encabezado +
     lineas.join("\n") +
     `\n\nTotal: ${formateadorPrecio.format(totalCarrito())}`;
   return construirEnlaceWhatsapp(mensaje);
@@ -252,23 +283,29 @@ function crearBotonAgregarCarrito(producto) {
   icono.className = "fa-solid fa-cart-plus";
   btn.appendChild(icono);
 
+  const texto = document.createElement("span");
+  texto.textContent = "Agregar al pedido";
+  btn.appendChild(texto);
+
   btn.addEventListener("click", (evento) => {
     evento.stopPropagation(); // no abrir el modal al usar este botón
     agregarAlCarrito(producto, 1);
-    confirmarAgregadoBoton(btn, icono, "fa-solid fa-cart-plus");
+    confirmarAgregadoBoton(btn, icono, "fa-solid fa-cart-plus", texto);
   });
 
   return btn;
 }
 
 // Feedback visual breve (ícono de check) al agregar un producto, tanto
-// desde la tarjeta como desde el modal.
-function confirmarAgregadoBoton(btn, icono, claseOriginal) {
+// desde la tarjeta como desde el modal. textoEl es opcional.
+function confirmarAgregadoBoton(btn, icono, claseOriginal, textoEl) {
   btn.classList.add("agregado");
   icono.className = "fa-solid fa-check";
+  if (textoEl) textoEl.textContent = "¡Agregado!";
   setTimeout(() => {
     btn.classList.remove("agregado");
     icono.className = claseOriginal;
+    if (textoEl) textoEl.textContent = "Agregar al pedido";
   }, 1200);
 }
 
