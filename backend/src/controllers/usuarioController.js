@@ -3,12 +3,7 @@
 // normal nunca puede gestionar otros usuarios (eso se controla en
 // usuarioRoutes.js con requireRole('super_admin'), sin incluir 'admin').
 
-let bcrypt;
-try {
-  bcrypt = require('bcryptjs');
-} catch (_e) {
-  bcrypt = require('bcrypt');
-}
+const bcrypt = require('bcryptjs');
 const pool = require('../config/db');
 const { ok, fail } = require('../utils/response');
 

@@ -6,7 +6,7 @@
 //   2. En PowerShell, dentro de backend/:  node ../db/generar-hash.js "TuClaveTemporal123!"
 //   3. Copia el texto que imprime y reemplaza <HASH_AQUI> en seed.sql
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const passwordTexto = process.argv[2];
 
