@@ -20,7 +20,9 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,
+  // En serverless cada instancia abre su propio pool: se limita para no
+  // agotar las conexiones máximas del plan de Aiven.
+  connectionLimit: process.env.VERCEL ? 3 : 10,
   charset: 'utf8mb4',
   ssl: { 
     rejectUnauthorized: false 
@@ -40,13 +42,16 @@ pool.on('error', (err) => {
   console.error('Error inesperado en el pool de MySQL:', err.message);
 });
 
-// Ping automático para mantener la conexión viva
-setInterval(async () => {
-  try {
-    await pool.query('SELECT 1');
-  } catch (error) {
-    console.error('Fallo en el latido de la BD:', error.message);
-  }
-}, 60000); // Se ejecuta cada 60 segundos
+// Ping automático para mantener la conexión viva (solo en servidor
+// persistente; en Vercel la función se congela entre peticiones).
+if (!process.env.VERCEL) {
+  setInterval(async () => {
+    try {
+      await pool.query('SELECT 1');
+    } catch (error) {
+      console.error('Fallo en el latido de la BD:', error.message);
+    }
+  }, 60000).unref(); // Se ejecuta cada 60 segundos
+}
 
 module.exports = pool;

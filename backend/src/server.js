@@ -1,6 +1,7 @@
 // Punto de entrada del backend.
 
 const path = require('path');
+const os = require('os');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const express = require('express');
 const cors = require('cors');
@@ -83,6 +84,15 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   }
 }));
+
+if (process.env.VERCEL) {
+  app.use('/uploads', express.static(path.join(os.tmpdir(), 'uploads'), {
+    setHeaders: (res) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+  }));
+}
 
 // Servir archivos estáticos del frontend en despliegue unificado o local
 const frontendPath = path.join(__dirname, '..', '..', 'frontend');

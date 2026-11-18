@@ -7,11 +7,21 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 
-const carpetaDestino = path.join(__dirname, '..', '..', 'uploads', 'productos');
+// En Vercel el sistema de archivos del proyecto es de SOLO LECTURA: crear
+// carpetas ahí lanza EROFS al cargar el módulo y tumba toda la API.
+// Allí solo se puede escribir en el directorio temporal del sistema (/tmp).
+const carpetaDestino = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'uploads', 'productos')
+  : path.join(__dirname, '..', '..', 'uploads', 'productos');
 
-if (!fs.existsSync(carpetaDestino)) {
-  fs.mkdirSync(carpetaDestino, { recursive: true });
+try {
+  if (!fs.existsSync(carpetaDestino)) {
+    fs.mkdirSync(carpetaDestino, { recursive: true });
+  }
+} catch (error) {
+  console.error('No se pudo preparar la carpeta de subidas:', error.message);
 }
 
 const storage = multer.diskStorage({
