@@ -101,12 +101,15 @@ const ICONOS_CATEGORIA = {
   limpieza: "fa-spray-can-sparkles",
   oficina: "fa-briefcase",
   tecnologia: "fa-laptop",
+  ancheta: "fa-gift",
+  regalo: "fa-gift",
   default: "fa-shapes",
 };
 const COLORES_CATEGORIA = ["#d62828", "#2b6cb0", "#f4b400", "#1da851"];
 
 function iconoParaCategoria(nombre) {
   const clave = (nombre || "").toLowerCase();
+  if (clave.includes("ancheta") || clave.includes("regalo")) return ICONOS_CATEGORIA.regalo;
   if (clave.includes("papel")) return ICONOS_CATEGORIA.papeleria;
   if (clave.includes("escolar")) return ICONOS_CATEGORIA.escolar;
   if (clave.includes("aseo") || clave.includes("limpieza")) return ICONOS_CATEGORIA.aseo;
