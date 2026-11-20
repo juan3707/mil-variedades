@@ -612,6 +612,8 @@ async function abrirModalProducto(idProducto) {
   overlay.classList.add("abierto");
   modal.classList.add("abierto");
   document.body.style.overflow = "hidden";
+  const scrollEl = modal.querySelector(".modal-cuerpo-scroll");
+  if (scrollEl) scrollEl.scrollTop = 0;
 
   // La cantidad del selector siempre arranca en 1 en cada producto nuevo
   if (typeof resetCantidadModal === "function") resetCantidadModal();

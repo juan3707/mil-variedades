@@ -492,6 +492,17 @@
           <a href="catalogo.html">Catálogo</a>
           <a href="#contacto">Contacto</a>
         </div>
+        <div class="footer-desarrollado">
+          <span class="footer-desarrollado-texto">Desarrollado por</span>
+          <span class="footer-nexora-marco">
+            <img
+              src="../assets/img/nexoralogo.jpeg"
+              alt="Nexora Solutions"
+              class="footer-nexora-logo"
+              loading="lazy"
+            />
+          </span>
+        </div>
       </div>
     </div>
   </footer>
@@ -499,36 +510,74 @@
   <!-- Modal de detalle de producto -->
   <div class="modal-overlay" id="modal-overlay"></div>
   <div class="modal-producto" id="modal-producto" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
-    <button class="modal-cerrar" id="modal-cerrar" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
-    <div class="modal-imagen" id="modal-imagen"></div>
-    <div class="modal-info">
-      <div class="modal-info-top">
-        <span class="producto-categoria" id="modal-categoria"></span>
-        <span class="modal-disponible"><i class="fa-solid fa-circle"></i> Disponible</span>
+    <div class="modal-topbar">
+      <button type="button" class="modal-cerrar" id="modal-cerrar" aria-label="Cerrar detalle del producto">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Detalle del producto</span>
+      </button>
+      <button type="button" class="modal-compartir" id="modal-compartir">
+        <i class="fa-solid fa-share-nodes"></i>
+        <span>Compartir</span>
+      </button>
+    </div>
+
+    <div class="modal-subbar">
+      <span><i class="fa-solid fa-location-dot"></i> Punto Físico: Parque Principal, La Ceja</span>
+      <span class="modal-subbar-fast"><i class="fa-solid fa-bolt"></i> Domicilio hoy</span>
+    </div>
+
+    <div class="modal-cuerpo-scroll">
+      <div class="modal-media-card">
+        <span class="modal-badge-cat" id="modal-categoria">Papelería</span>
+        <span class="modal-disponible"><i class="fa-solid fa-circle"></i> Disponible en tienda</span>
+        <div class="modal-imagen" id="modal-imagen"></div>
+        <span class="modal-badge-garantia">100% Original</span>
       </div>
-      <h2 id="modal-titulo"></h2>
-      <p class="modal-descripcion" id="modal-descripcion"></p>
-      <div class="modal-precio-wrap">
-        <span class="modal-precio-label">Precio</span>
-        <span class="modal-precio" id="modal-precio"></span>
-      </div>
-      <div class="modal-cantidad-wrap">
-        <span>Cantidad</span>
-        <div class="modal-cantidad-stepper">
-          <button type="button" id="modal-cantidad-menos" aria-label="Disminuir cantidad">−</button>
-          <span id="modal-cantidad-valor">1</span>
-          <button type="button" id="modal-cantidad-mas" aria-label="Aumentar cantidad">+</button>
+
+      <div class="modal-info-card">
+        <h2 id="modal-titulo"></h2>
+        <p class="modal-descripcion" id="modal-descripcion"></p>
+
+        <div class="modal-precio-box">
+          <div class="modal-precio-izq">
+            <span class="modal-precio-label">Precio por unidad</span>
+            <div class="modal-precio-linea">
+              <strong class="modal-precio" id="modal-precio"></strong>
+              <span class="modal-precio-cop">COP</span>
+            </div>
+          </div>
+          <div class="modal-precio-der">
+            <span class="modal-badge-barrio">Precio de Barrio</span>
+            <span class="modal-iva-nota">IVA incluido</span>
+          </div>
+        </div>
+
+        <div class="modal-cantidad-row">
+          <div class="modal-cantidad-textos">
+            <strong>Seleccionar cantidad</strong>
+            <span>Disponible en bodega La Ceja</span>
+          </div>
+          <div class="modal-cantidad-control">
+            <button type="button" id="modal-cantidad-menos" aria-label="Disminuir cantidad">−</button>
+            <span id="modal-cantidad-valor">1</span>
+            <button type="button" id="modal-cantidad-mas" aria-label="Aumentar cantidad">+</button>
+          </div>
+        </div>
+
+        <div class="modal-acciones-stack">
+          <button type="button" class="btn-agregar-pedido" id="btn-agregar-pedido">
+            <i class="fa-solid fa-cart-plus"></i> Agregar al pedido
+          </button>
+          <a href="#" id="modal-whatsapp" class="btn-comprar-wsp" target="_blank" rel="noopener">
+            <i class="fa-brands fa-whatsapp"></i> Preguntar por WhatsApp
+          </a>
+        </div>
+
+        <div class="modal-nota-mayorista">
+          <i class="fa-solid fa-headset"></i>
+          <span>¿Requieres varias unidades o cotización al por mayor en el Oriente Antioqueño? Escríbenos por WhatsApp.</span>
         </div>
       </div>
-      <button type="button" class="btn-agregar-pedido" id="btn-agregar-pedido">
-        <i class="fa-solid fa-cart-plus"></i> Agregar al pedido
-      </button>
-      <a href="#" id="modal-whatsapp" class="btn-comprar-wsp" target="_blank" rel="noopener">
-        <i class="fa-brands fa-whatsapp"></i> Preguntar por WhatsApp
-      </a>
-      <button class="modal-compartir" id="modal-compartir">
-        <i class="fa-solid fa-share-nodes"></i> Compartir este producto
-      </button>
     </div>
   </div>
 
