@@ -3756,56 +3756,52 @@ footer {
 .footer-desarrollado {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-left: auto;
-  opacity: 0.88;
+  opacity: 0.72;
   transition: opacity 200ms ease;
 }
 
 .footer-desarrollado:hover {
-  opacity: 1;
+  opacity: 0.96;
 }
 
 .footer-desarrollado-texto {
-  font-size: 0.67rem;
+  font-size: 0.62rem;
   letter-spacing: 0.03em;
   color: #6b6157;
-  opacity: 0.75;
+  opacity: 0.7;
   white-space: nowrap;
 }
 
 .footer-nexora-marco {
   display: inline-flex;
   padding: 1px;
-  border-radius: 6px;
+  border-radius: 4.5px;
   overflow: hidden;
   background: linear-gradient(
     135deg,
-    rgba(226, 232, 240, 0.38) 0%,
-    rgba(59, 130, 246, 0.3) 35%,
-    rgba(148, 163, 184, 0.18) 65%,
-    rgba(255, 255, 255, 0.35) 100%
+    rgba(226, 232, 240, 0.26) 0%,
+    rgba(59, 130, 246, 0.2) 38%,
+    rgba(148, 163, 184, 0.12) 68%,
+    rgba(255, 255, 255, 0.22) 100%
   );
-  box-shadow:
-    0 1px 6px rgba(37, 99, 235, 0.08),
-    0 1px 2px rgba(15, 23, 42, 0.14);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
   transition: box-shadow 220ms ease, filter 220ms ease;
 }
 
 .footer-nexora-marco:hover {
-  box-shadow:
-    0 2px 10px rgba(59, 130, 246, 0.18),
-    0 0 6px rgba(226, 232, 240, 0.15);
-  filter: brightness(1.04);
+  box-shadow: 0 1px 6px rgba(59, 130, 246, 0.14);
+  filter: brightness(1.03);
 }
 
 .footer-nexora-logo {
   display: block;
-  width: 96px;
-  height: 23px;
+  width: 72px;
+  height: 17px;
   object-fit: cover;
   object-position: center;
-  border-radius: 5px;
+  border-radius: 3.5px;
 }
 
 @media (max-width: 768px) {
@@ -3813,6 +3809,6 @@ footer {
     margin-left: 0;
     justify-content: center;
     width: 100%;
-    padding-bottom: 6px;
+    padding-bottom: 4px;
   }
 }
