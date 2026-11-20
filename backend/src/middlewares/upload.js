@@ -1,43 +1,30 @@
-// Multer: recibe archivos y los guarda en /uploads/productos.
-// NOTA: por ahora no filtramos por tipo de archivo (algunos archivos
-// de celular/capturas traen un mimetype poco confiable) — solo
-// limitamos el tamaño. Es un ajuste pendiente de pulir más adelante,
-// no algo crítico para el funcionamiento del proyecto.
+// Multer en memoria (memoryStorage): compatible 100% con Vercel Serverless
+// (cero escrituras en disco de solo lectura). El buffer se valida por firma
+// binaria y se almacena en MySQL (Aiven) para servirse en GET /api/imagenes/:id.
 
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
 
-// En Vercel el sistema de archivos del proyecto es de SOLO LECTURA: crear
-// carpetas ahí lanza EROFS al cargar el módulo y tumba toda la API.
-// Allí solo se puede escribir en el directorio temporal del sistema (/tmp).
-const carpetaDestino = process.env.VERCEL
-  ? path.join(os.tmpdir(), 'uploads', 'productos')
-  : path.join(__dirname, '..', '..', 'uploads', 'productos');
+const MIMES_PERMITIDOS = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]);
 
-try {
-  if (!fs.existsSync(carpetaDestino)) {
-    fs.mkdirSync(carpetaDestino, { recursive: true });
-  }
-} catch (error) {
-  console.error('No se pudo preparar la carpeta de subidas:', error.message);
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, carpetaDestino);
-  },
-  filename: (req, file, cb) => {
-    const extension = path.extname(file.originalname) || '.jpg';
-    const nombreUnico = `producto-${req.params.id}-${Date.now()}${extension}`;
-    cb(null, nombreUnico);
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // máximo 5 MB por imagen
+  limits: { fileSize: 4 * 1024 * 1024 }, // máximo 4 MB (compatible con Vercel Serverless)
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype || MIMES_PERMITIDOS.has(file.mimetype.toLowerCase())) {
+      return cb(null, true);
+    }
+    const err = new Error('Formato de imagen no soportado. Usa JPG, PNG, WEBP o GIF.');
+    err.status = 400;
+    return cb(err);
+  },
 });
 
 module.exports = upload;

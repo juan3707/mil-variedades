@@ -84,7 +84,9 @@ CREATE INDEX idx_producto_nombre ON producto(nombre);
 CREATE TABLE imagen_producto (
     id_imagen   INT AUTO_INCREMENT PRIMARY KEY,
     id_producto INT NOT NULL,
-    url_imagen  VARCHAR(255) NOT NULL, -- ej: /uploads/productos/cuaderno-123.jpg
+    url_imagen  VARCHAR(255) NOT NULL, -- ej: /api/imagenes/12 o /uploads/productos/cuaderno-123.jpg
+    datos       MEDIUMBLOB NULL,
+    mime_type   VARCHAR(50) NULL,
     orden       INT NOT NULL DEFAULT 0,
     estado      TINYINT(1) NOT NULL DEFAULT 1,
 

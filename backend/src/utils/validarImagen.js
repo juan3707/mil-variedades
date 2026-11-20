@@ -1,26 +1,41 @@
-// El "pendiente de seguridad" que dejamos anotado en el módulo de
-// imágenes: en vez de confiar en lo que el navegador DICE que es un
-// archivo (mimetype, que se puede falsificar), leemos los primeros
-// bytes REALES del archivo y los comparamos contra las firmas binarias
-// conocidas de cada formato de imagen. Esto es lo que en seguridad se
-// llama "validación por contenido", más confiable que validar por
-// nombre o mimetype.
+// Validación de imágenes por contenido binario real (magic bytes).
+// Soporta recibir directamente un Buffer en memoria (multer.memoryStorage)
+// o una ruta de archivo en disco por retrocompatibilidad.
 
 const fs = require('fs');
 
-const FIRMAS = {
-  jpg: [0xff, 0xd8, 0xff],
-  png: [0x89, 0x50, 0x4e, 0x47],
-  gif: [0x47, 0x49, 0x46],
-  webp: [0x52, 0x49, 0x46, 0x46], // "RIFF" (los archivos WEBP empiezan así)
-};
+const FIRMAS = [
+  { tipo: 'jpg', mime: 'image/jpeg', bytes: [0xff, 0xd8, 0xff] },
+  { tipo: 'png', mime: 'image/png', bytes: [0x89, 0x50, 0x4e, 0x47] },
+  { tipo: 'gif', mime: 'image/gif', bytes: [0x47, 0x49, 0x46] },
+  { tipo: 'webp', mime: 'image/webp', bytes: [0x52, 0x49, 0x46, 0x46] }, // "RIFF"
+];
 
-function esImagenValida(rutaArchivo) {
-  const buffer = fs.readFileSync(rutaArchivo);
-
-  return Object.values(FIRMAS).some((firma) =>
-    firma.every((byte, index) => buffer[index] === byte)
-  );
+function obtenerBuffer(entrada) {
+  if (!entrada) return null;
+  if (Buffer.isBuffer(entrada)) return entrada;
+  if (typeof entrada === 'string') {
+    try {
+      return fs.readFileSync(entrada);
+    } catch (_err) {
+      return null;
+    }
+  }
+  return null;
 }
 
-module.exports = { esImagenValida };
+function detectarMimeImagen(entrada) {
+  const buffer = obtenerBuffer(entrada);
+  if (!buffer || buffer.length < 4) return null;
+
+  const coincidencia = FIRMAS.find((firma) =>
+    firma.bytes.every((byte, index) => buffer[index] === byte)
+  );
+  return coincidencia ? coincidencia.mime : null;
+}
+
+function esImagenValida(entrada) {
+  return Boolean(detectarMimeImagen(entrada));
+}
+
+module.exports = { esImagenValida, detectarMimeImagen };

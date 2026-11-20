@@ -173,16 +173,16 @@
         <input type="number" id="producto-stock" min="0" step="1" placeholder="0" />
       </div>
 
-      <div class="panel-campo" id="campo-imagenes" style="display:none;">
+      <div class="panel-campo" id="campo-imagenes">
         <label>Fotos del producto</label>
         <div class="panel-imagenes-lista" id="panel-imagenes-lista"></div>
         <div class="panel-imagen-subir">
-          <input type="file" id="producto-imagen-archivo" accept="image/*" />
+          <input type="file" id="producto-imagen-archivo" accept="image/jpeg,image/png,image/webp,image/gif" />
           <button type="button" class="btn-secundario panel-btn-subir" id="btn-subir-imagen">
             <i class="fa-solid fa-arrow-up-from-bracket"></i> Subir foto
           </button>
         </div>
-        <p class="panel-imagenes-nota">La primera foto de la lista es la que se muestra en el catálogo.</p>
+        <p class="panel-imagenes-nota">Las fotos se optimizan y suben automáticamente al seleccionarlas. La primera foto es la portada en el catálogo.</p>
       </div>
 
       <p class="login-error" id="producto-error" role="alert" style="display:none;"></p>

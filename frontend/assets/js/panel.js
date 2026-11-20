@@ -10,6 +10,7 @@ let categoriasCargadas = [];
 let productosCargados = [];
 let paginaProductos = 1;
 let paginacionProductos = { pagina: 1, total_paginas: 1, total_productos: 0 };
+let imagenesPendientesCrear = [];
 const LIMITE_PRODUCTOS_PANEL = 20;
 
 const formateadorPrecio = new Intl.NumberFormat("es-CO", {
@@ -116,7 +117,7 @@ async function cargarCategorias() {
 
 function renderizarSelectCategorias() {
   const select = document.getElementById("producto-categoria");
-  select.innerHTML = "";
+  select.textContent = "";
   categoriasCargadas.forEach((categoria) => {
     const opcion = document.createElement("option");
     opcion.value = categoria.id_categoria;
@@ -127,7 +128,7 @@ function renderizarSelectCategorias() {
 
 function renderizarTablaCategorias() {
   const cuerpo = document.getElementById("tabla-categorias-body");
-  cuerpo.innerHTML = "";
+  cuerpo.textContent = "";
 
   document.getElementById("contador-categorias").textContent =
     `${categoriasCargadas.length} categoría${categoriasCargadas.length === 1 ? "" : "s"}`;
@@ -243,8 +244,7 @@ async function eliminarCategoriaConfirmar(categoria) {
 // ============================================================
 
 async function cargarProductos() {
-  const cuerpo = document.getElementById("tabla-productos-body");
-  cuerpo.innerHTML = '<tr><td colspan="6" class="panel-tabla-vacia">Cargando…</td></tr>';
+  mostrarErrorTabla("tabla-productos-body", 6, "Cargando…");
   document.getElementById("contador-productos").textContent = "Cargando productos…";
 
   try {
@@ -282,7 +282,7 @@ function claseTonoCategoria(nombreCat) {
 
 function renderizarTablaProductos() {
   const cuerpo = document.getElementById("tabla-productos-body");
-  cuerpo.innerHTML = "";
+  cuerpo.textContent = "";
 
   if (productosCargados.length === 0) {
     mostrarErrorTabla("tabla-productos-body", 6, "Todavía no hay productos.");
@@ -370,7 +370,7 @@ function renderizarTablaProductos() {
 
 function renderizarPaginacionProductos() {
   const contenedor = document.getElementById("paginacion-productos");
-  contenedor.innerHTML = "";
+  contenedor.textContent = "";
 
   const pagina = paginacionProductos.pagina || 1;
   const totalPaginas = Math.max(1, paginacionProductos.total_paginas || 1);
@@ -407,29 +407,206 @@ function irAPaginaProductos(numero) {
   cargarProductos();
 }
 
+// ---------- Compresión y optimización automática de imagen en Frontend ----------
+async function optimizarImagenAntesDeSubir(archivo) {
+  if (!archivo || typeof archivo !== "object") return archivo;
+
+  // Si es un GIF animado pequeño (< 1.5 MB), se conserva intacto para no perder animación
+  if (archivo.type === "image/gif" && archivo.size <= 1.5 * 1024 * 1024) {
+    return archivo;
+  }
+
+  return new Promise((resolve) => {
+    const urlObjeto = URL.createObjectURL(archivo);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(urlObjeto);
+
+      const MAX_DIMENSION = 1000;
+      let ancho = img.naturalWidth || img.width || MAX_DIMENSION;
+      let alto = img.naturalHeight || img.height || MAX_DIMENSION;
+
+      const requiereRedimension = ancho > MAX_DIMENSION || alto > MAX_DIMENSION;
+      const requiereRecompresion =
+        archivo.size > 350 * 1024 ||
+        !["image/jpeg", "image/png", "image/webp"].includes(archivo.type);
+
+      if (!requiereRedimension && !requiereRecompresion) {
+        resolve(archivo);
+        return;
+      }
+
+      if (ancho > alto && ancho > MAX_DIMENSION) {
+        alto = Math.round((alto * MAX_DIMENSION) / ancho);
+        ancho = MAX_DIMENSION;
+      } else if (alto >= ancho && alto > MAX_DIMENSION) {
+        ancho = Math.round((ancho * MAX_DIMENSION) / alto);
+        alto = MAX_DIMENSION;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = ancho;
+      canvas.height = alto;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(archivo);
+        return;
+      }
+
+      // Fondo blanco por si la imagen tiene transparencia y cae en fallback JPEG
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, ancho, alto);
+      ctx.drawImage(img, 0, 0, ancho, alto);
+
+      const nombreBase = (archivo.name || "producto").replace(/\.[^.]+$/, "");
+
+      canvas.toBlob(
+        (blobWebp) => {
+          if (blobWebp && blobWebp.size > 0) {
+            const archivoOpt = new File([blobWebp], `${nombreBase}.webp`, {
+              type: "image/webp",
+              lastModified: Date.now(),
+            });
+            resolve(archivoOpt);
+            return;
+          }
+
+          canvas.toBlob(
+            (blobJpg) => {
+              if (blobJpg && blobJpg.size > 0) {
+                const archivoJpg = new File([blobJpg], `${nombreBase}.jpg`, {
+                  type: "image/jpeg",
+                  lastModified: Date.now(),
+                });
+                resolve(archivoJpg);
+              } else {
+                resolve(archivo);
+              }
+            },
+            "image/jpeg",
+            0.82
+          );
+        },
+        "image/webp",
+        0.82
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(urlObjeto);
+      resolve(archivo);
+    };
+
+    img.src = urlObjeto;
+  });
+}
+
+function limpiarImagenesPendientesCrear() {
+  imagenesPendientesCrear.forEach((item) => {
+    if (item && item.previewUrl) {
+      URL.revokeObjectURL(item.previewUrl);
+    }
+  });
+  imagenesPendientesCrear = [];
+}
+
+function renderizarImagenesPendientesCrear() {
+  const lista = document.getElementById("panel-imagenes-lista");
+  lista.textContent = "";
+
+  if (imagenesPendientesCrear.length === 0) {
+    const vacio = document.createElement("p");
+    vacio.className = "panel-imagenes-vacio";
+    vacio.textContent = "Selecciona una foto para adjuntarla al crear el producto.";
+    lista.appendChild(vacio);
+    return;
+  }
+
+  imagenesPendientesCrear.forEach((item, indice) => {
+    const contenedor = document.createElement("div");
+    contenedor.className = "panel-imagen-item";
+
+    const img = document.createElement("img");
+    img.src = item.previewUrl;
+    img.alt = "";
+    contenedor.appendChild(img);
+
+    const btnQuitar = document.createElement("button");
+    btnQuitar.type = "button";
+    btnQuitar.className = "panel-imagen-quitar";
+    btnQuitar.setAttribute("aria-label", "Quitar foto pendiente");
+    const iconoX = document.createElement("i");
+    iconoX.className = "fa-solid fa-xmark";
+    btnQuitar.appendChild(iconoX);
+    btnQuitar.addEventListener("click", () => {
+      if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+      imagenesPendientesCrear.splice(indice, 1);
+      renderizarImagenesPendientesCrear();
+    });
+    contenedor.appendChild(btnQuitar);
+
+    lista.appendChild(contenedor);
+  });
+}
+
+function actualizarEstadoBotonSubir(subiendo) {
+  const boton = document.getElementById("btn-subir-imagen");
+  if (!boton) return;
+  boton.disabled = Boolean(subiendo);
+  boton.textContent = "";
+  const icono = document.createElement("i");
+  icono.className = subiendo
+    ? "fa-solid fa-spinner fa-spin"
+    : "fa-solid fa-arrow-up-from-bracket";
+  boton.appendChild(icono);
+  boton.appendChild(document.createTextNode(subiendo ? " Subiendo foto…" : " Subir foto"));
+}
+
 // ---------- Modal crear/editar producto ----------
 function activarModalProducto() {
   document.getElementById("btn-nuevo-producto").addEventListener("click", abrirModalProductoCrear);
   document.getElementById("modal-producto-overlay").addEventListener("click", cerrarModalProducto);
   document.getElementById("modal-producto-cerrar").addEventListener("click", cerrarModalProducto);
   document.getElementById("btn-cancelar-producto").addEventListener("click", cerrarModalProducto);
-  document.getElementById("btn-subir-imagen").addEventListener("click", subirImagenDelModal);
+
+  const inputArchivo = document.getElementById("producto-imagen-archivo");
+  if (inputArchivo) {
+    inputArchivo.addEventListener("change", () => {
+      if (inputArchivo.files && inputArchivo.files.length > 0) {
+        subirImagenDelModal();
+      }
+    });
+  }
+
+  document.getElementById("btn-subir-imagen").addEventListener("click", () => {
+    const input = document.getElementById("producto-imagen-archivo");
+    if (input && (!input.files || input.files.length === 0)) {
+      input.click();
+      return;
+    }
+    subirImagenDelModal();
+  });
+
   document.getElementById("form-producto").addEventListener("submit", guardarProducto);
 }
 
 function abrirModalProductoCrear() {
+  limpiarImagenesPendientesCrear();
   document.getElementById("producto-id").value = "";
   document.getElementById("producto-nombre").value = "";
   document.getElementById("producto-descripcion").value = "";
   document.getElementById("producto-precio").value = "";
   document.getElementById("producto-stock").value = "";
+  const inputArchivo = document.getElementById("producto-imagen-archivo");
+  if (inputArchivo) inputArchivo.value = "";
   if (categoriasCargadas.length > 0) {
     document.getElementById("producto-categoria").value = categoriasCargadas[0].id_categoria;
   }
   document.getElementById("modal-producto-titulo").textContent = "Nuevo producto";
   document.getElementById("campo-stock").style.display = "none";
-  document.getElementById("campo-imagenes").style.display = "none";
-  document.getElementById("panel-imagenes-lista").innerHTML = "";
+  document.getElementById("campo-imagenes").style.display = "block";
+  renderizarImagenesPendientesCrear();
   ocultarErrorForm("producto-error");
 
   document.getElementById("modal-producto-overlay").classList.add("abierto");
@@ -437,6 +614,9 @@ function abrirModalProductoCrear() {
 }
 
 async function abrirModalProductoEditar(idProducto) {
+  limpiarImagenesPendientesCrear();
+  const inputArchivo = document.getElementById("producto-imagen-archivo");
+  if (inputArchivo) inputArchivo.value = "";
   document.getElementById("modal-producto-titulo").textContent = "Editar producto";
   document.getElementById("campo-stock").style.display = "block";
   document.getElementById("campo-imagenes").style.display = "block";
@@ -468,13 +648,16 @@ async function cargarProductoEnModal(idProducto) {
 }
 
 function cerrarModalProducto() {
+  limpiarImagenesPendientesCrear();
+  const inputArchivo = document.getElementById("producto-imagen-archivo");
+  if (inputArchivo) inputArchivo.value = "";
   document.getElementById("modal-producto-overlay").classList.remove("abierto");
   document.getElementById("modal-producto").classList.remove("abierto");
 }
 
 function renderizarImagenesModal(imagenes) {
   const lista = document.getElementById("panel-imagenes-lista");
-  lista.innerHTML = "";
+  lista.textContent = "";
 
   if (imagenes.length === 0) {
     const vacio = document.createElement("p");
@@ -497,7 +680,9 @@ function renderizarImagenesModal(imagenes) {
     btnQuitar.type = "button";
     btnQuitar.className = "panel-imagen-quitar";
     btnQuitar.setAttribute("aria-label", "Eliminar esta foto");
-    btnQuitar.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    const iconoX = document.createElement("i");
+    iconoX.className = "fa-solid fa-xmark";
+    btnQuitar.appendChild(iconoX);
     btnQuitar.addEventListener("click", () => eliminarImagenDelModal(imagen.id_imagen));
     item.appendChild(btnQuitar);
 
@@ -506,25 +691,39 @@ function renderizarImagenesModal(imagenes) {
 }
 
 async function subirImagenDelModal() {
+  ocultarErrorForm("producto-error");
   const idProducto = document.getElementById("producto-id").value;
   const inputArchivo = document.getElementById("producto-imagen-archivo");
-  if (!idProducto) return; // no debería pasar: el bloque de fotos solo se ve en modo editar
-  if (!inputArchivo.files || inputArchivo.files.length === 0) {
+
+  if (!inputArchivo || !inputArchivo.files || inputArchivo.files.length === 0) {
     mostrarErrorForm("producto-error", "Elige un archivo de imagen primero.");
     return;
   }
 
-  const boton = document.getElementById("btn-subir-imagen");
-  boton.disabled = true;
+  const archivoOriginal = inputArchivo.files[0];
+  actualizarEstadoBotonSubir(true);
+
   try {
-    await api.subirImagenProducto(idProducto, inputArchivo.files[0]);
-    inputArchivo.value = "";
-    await cargarProductoEnModal(idProducto); // refresca la lista de fotos
+    const archivoOptimizado = await optimizarImagenAntesDeSubir(archivoOriginal);
+
+    if (!idProducto) {
+      // Modo Crear: encolamos la imagen optimizada y mostramos vista previa inmediata
+      const previewUrl = URL.createObjectURL(archivoOptimizado);
+      imagenesPendientesCrear.push({ archivo: archivoOptimizado, previewUrl });
+      renderizarImagenesPendientesCrear();
+      return;
+    }
+
+    // Modo Editar: subimos al instante al backend
+    await api.subirImagenProducto(idProducto, archivoOptimizado);
+    await cargarProductoEnModal(idProducto);
+    await cargarProductos();
   } catch (error) {
     const mensaje = manejarErrorSesion(error);
     if (mensaje) mostrarErrorForm("producto-error", mensaje);
   } finally {
-    boton.disabled = false;
+    if (inputArchivo) inputArchivo.value = "";
+    actualizarEstadoBotonSubir(false);
   }
 }
 
@@ -533,6 +732,7 @@ async function eliminarImagenDelModal(idImagen) {
   try {
     await api.eliminarImagenProducto(idImagen);
     await cargarProductoEnModal(idProducto);
+    await cargarProductos();
   } catch (error) {
     const mensaje = manejarErrorSesion(error);
     if (mensaje) mostrarErrorForm("producto-error", mensaje);
@@ -565,13 +765,19 @@ async function guardarProducto(evento) {
       await cargarProductos();
     } else {
       const creado = await api.crearProducto(datos);
-      // En vez de cerrar, se pasa el modal a modo "editar" del producto
-      // recién creado, para que se puedan agregar fotos y stock de una
-      // vez sin tener que volver a abrirlo.
+      const nuevoId = creado.id_producto;
+
+      if (imagenesPendientesCrear.length > 0) {
+        for (const item of imagenesPendientesCrear) {
+          await api.subirImagenProducto(nuevoId, item.archivo);
+        }
+        limpiarImagenesPendientesCrear();
+      }
+
       document.getElementById("modal-producto-titulo").textContent = "Editar producto";
       document.getElementById("campo-stock").style.display = "block";
       document.getElementById("campo-imagenes").style.display = "block";
-      await cargarProductoEnModal(creado.id_producto);
+      await cargarProductoEnModal(nuevoId);
       await cargarProductos();
     }
   } catch (error) {
@@ -606,14 +812,16 @@ function crearBotonAccion(icono, etiqueta, accion, destructivo) {
   boton.type = "button";
   boton.className = "panel-btn-accion" + (destructivo ? " destructivo" : "");
   boton.setAttribute("aria-label", etiqueta);
-  boton.innerHTML = `<i class="fa-solid ${icono}"></i>`;
+  const iconoEl = document.createElement("i");
+  iconoEl.className = `fa-solid ${icono}`;
+  boton.appendChild(iconoEl);
   boton.addEventListener("click", accion);
   return boton;
 }
 
 function mostrarErrorTabla(idTbody, columnas, mensaje) {
   const cuerpo = document.getElementById(idTbody);
-  cuerpo.innerHTML = "";
+  cuerpo.textContent = "";
   const fila = document.createElement("tr");
   const celda = document.createElement("td");
   celda.colSpan = columnas;
