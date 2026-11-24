@@ -1,11 +1,14 @@
 {
   "name": "mil-variedades-fullstack",
   "version": "1.0.0",
-  "description": "Sistema unificado Frontend + Backend de Mil Variedades (Vercel + Aiven MySQL)",
-  "main": "index.js",
+  "description": "Sistema unificado Frontend + Backend de Mil Variedades (Hostinger / Vercel + Aiven MySQL)",
+  "main": "backend/src/server.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "dev": "nodemon backend/src/server.js",
+    "start": "node backend/src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

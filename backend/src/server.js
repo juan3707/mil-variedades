@@ -52,26 +52,29 @@ app.use(
   })
 );
 
-// CORS multi-puerto y compatible con Vercel
+// CORS multi-puerto y compatible con Hostinger, Vercel y mismo origen
 const origenesPermitidos = (process.env.CORS_ORIGIN || "")
   .split(",")
   .map((o) => o.trim())
   .filter(Boolean);
 
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (
-        !origin ||
-        (origin === "null" && process.env.NODE_ENV !== "production") ||
-        origenesPermitidos.includes(origin) ||
-        origin.endsWith(".vercel.app")
-      ) {
-        return callback(null, true);
-      }
-      return callback(new Error("No permitido por CORS"));
-    },
-    credentials: true,
+  cors((req, callback) => {
+    const origin = req.header("Origin");
+    const host = req.header("Host");
+    const esMismoHost = Boolean(origin && host && origin.endsWith(`://${host}`));
+
+    if (
+      !origin ||
+      esMismoHost ||
+      (origin === "null" && process.env.NODE_ENV !== "production") ||
+      origenesPermitidos.includes(origin) ||
+      origin.endsWith(".vercel.app") ||
+      origin.endsWith(".hostingersite.com")
+    ) {
+      return callback(null, { origin: true, credentials: true });
+    }
+    return callback(new Error("No permitido por CORS"));
   })
 );
 
@@ -94,22 +97,37 @@ if (process.env.VERCEL) {
   }));
 }
 
-// Servir archivos estáticos del frontend en despliegue unificado o local
-const frontendPath = path.join(__dirname, '..', '..', 'frontend');
-app.use('/assets', express.static(path.join(frontendPath, 'assets')));
-app.use('/pages', express.static(path.join(frontendPath, 'pages')));
-app.use(express.static(path.join(frontendPath, 'pages')));
-
+// Rutas de la API REST
 app.use('/api', routes);
 
-app.get('/', (_req, res) => {
-  res.sendFile(path.join(frontendPath, 'pages', 'index.html'));
+// Servir archivos estáticos y páginas del frontend en Hostinger / despliegue unificado
+const frontendPath = path.join(__dirname, '..', '..', 'frontend');
+const pagesPath = path.join(frontendPath, 'pages');
+
+app.use('/assets', express.static(path.join(frontendPath, 'assets')));
+app.use('/pages', express.static(pagesPath));
+app.use(express.static(pagesPath));
+
+app.get(['/', '/index.html'], (_req, res) => {
+  res.sendFile(path.join(pagesPath, 'index.html'));
+});
+
+app.get('/catalogo.html', (_req, res) => {
+  res.sendFile(path.join(pagesPath, 'catalogo.html'));
+});
+
+app.get('/login.html', (_req, res) => {
+  res.sendFile(path.join(pagesPath, 'login.html'));
+});
+
+app.get('/panel.html', (_req, res) => {
+  res.sendFile(path.join(pagesPath, 'panel.html'));
 });
 
 app.use(errorHandler);
 
-if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () => console.log(`Servidor local en puerto ${PORT}`));
+  app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
 }
 module.exports = app;
