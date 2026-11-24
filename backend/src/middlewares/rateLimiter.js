@@ -4,10 +4,17 @@
 
 const rateLimit = require('express-rate-limit');
 
-// Límite general: aplica a TODA la API
+// Límite general: aplica a TODA la API (excluyendo GET de imágenes públicas)
 const generalLimiter = rateLimit({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW_MIN || 15) * 60 * 1000,
   max: Number(process.env.RATE_LIMIT_MAX_REQUESTS || 100),
+  skip: (req) => {
+    const url = req.originalUrl || req.url || "";
+    return (
+      req.method === "GET" &&
+      (url.startsWith("/api/imagenes/") || req.path.startsWith("/imagenes/"))
+    );
+  },
   message: { success: false, message: 'Demasiadas peticiones, intenta de nuevo más tarde' },
 });
 

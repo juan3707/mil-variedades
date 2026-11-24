@@ -368,6 +368,21 @@ function renderizarTablaProductos() {
   });
 }
 
+function calcularPaginasVisiblesPanel(actual, total) {
+  const ventana = 2;
+  const paginas = [];
+  for (let n = 1; n <= total; n += 1) {
+    const esBorde = n === 1 || n === total;
+    const esCercana = n >= actual - ventana && n <= actual + ventana;
+    if (esBorde || esCercana) {
+      paginas.push(n);
+    } else if (paginas[paginas.length - 1] !== "...") {
+      paginas.push("...");
+    }
+  }
+  return paginas;
+}
+
 function renderizarPaginacionProductos() {
   const contenedor = document.getElementById("paginacion-productos");
   contenedor.textContent = "";
@@ -383,14 +398,21 @@ function renderizarPaginacionProductos() {
   btnAnterior.addEventListener("click", () => irAPaginaProductos(pagina - 1));
   contenedor.appendChild(btnAnterior);
 
-  for (let n = 1; n <= totalPaginas; n += 1) {
+  calcularPaginasVisiblesPanel(pagina, totalPaginas).forEach((entrada) => {
+    if (entrada === "...") {
+      const puntos = document.createElement("span");
+      puntos.className = "paginacion-puntos";
+      puntos.textContent = "…";
+      contenedor.appendChild(puntos);
+      return;
+    }
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "paginacion-numero" + (n === pagina ? " activo" : "");
-    btn.textContent = n;
-    btn.addEventListener("click", () => irAPaginaProductos(n));
+    btn.className = "paginacion-numero" + (entrada === pagina ? " activo" : "");
+    btn.textContent = entrada;
+    btn.addEventListener("click", () => irAPaginaProductos(entrada));
     contenedor.appendChild(btn);
-  }
+  });
 
   const btnSiguiente = document.createElement("button");
   btnSiguiente.type = "button";

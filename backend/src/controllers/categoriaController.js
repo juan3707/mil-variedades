@@ -11,10 +11,13 @@ async function listarCategorias(req, res, next) {
     }
 
     const [rows] = await pool.query(
-      `SELECT id_categoria, nombre, descripcion
-       FROM categoria
-       WHERE estado = 1
-       ORDER BY nombre ASC`
+      `SELECT c.id_categoria, c.nombre, c.descripcion,
+              CAST(COALESCE(COUNT(p.id_producto), 0) AS UNSIGNED) AS total_productos
+       FROM categoria c
+       LEFT JOIN producto p ON p.id_categoria = c.id_categoria AND p.estado = 1
+       WHERE c.estado = 1
+       GROUP BY c.id_categoria, c.nombre, c.descripcion
+       ORDER BY c.nombre ASC`
     );
 
     guardarCache(cacheKey, rows, 300); // categorías cambian poco: 5 minutos

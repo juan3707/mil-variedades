@@ -163,10 +163,14 @@ async function cargarCategoriasYProductos() {
       vacio.textContent = "Todavía no hay categorías para mostrar.";
       contenedorCat.appendChild(vacio);
     } else {
-      // Conteo REAL de productos por categoría con caché en sessionStorage
-      // (TTL 5 min) para no disparar N peticiones en cada recarga.
-      let conteosPorCategoria =
-        typeof leerCacheSesion === "function" ? leerCacheSesion("mv_cache_conteos_cat") : null;
+      // Conteo REAL de productos por categoría: ahora viene incluido en
+      // GET /api/categorias (c.total_productos), evitando N peticiones extra.
+      // Se mantiene fallback seguro si algún entorno no devuelve total_productos.
+      let conteosPorCategoria = categoriasCargadas.every((c) => c.total_productos !== undefined)
+        ? categoriasCargadas.map((c) => Number(c.total_productos ?? 0))
+        : typeof leerCacheSesion === "function"
+          ? leerCacheSesion("mv_cache_conteos_cat")
+          : null;
 
       if (!Array.isArray(conteosPorCategoria) || conteosPorCategoria.length !== categoriasCargadas.length) {
         conteosPorCategoria = await Promise.all(

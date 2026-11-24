@@ -89,6 +89,7 @@ async function listarProductos(req, res, next) {
     const [rows] = await pool.query(
       `SELECT p.id_producto, p.nombre, p.descripcion, p.precio,
               p.id_categoria, c.nombre AS categoria,
+              COALESCE(s.cantidad, 0) AS stock,
               (SELECT ip.url_imagen
                FROM imagen_producto ip
                WHERE ip.id_producto = p.id_producto AND ip.estado = 1
@@ -96,6 +97,7 @@ async function listarProductos(req, res, next) {
                LIMIT 1) AS imagen_portada
        FROM producto p
        JOIN categoria c ON c.id_categoria = p.id_categoria
+       LEFT JOIN stock s ON s.id_producto = p.id_producto
        WHERE ${whereSql}
        ORDER BY ${ordenSql}
        LIMIT ? OFFSET ?`,
@@ -145,9 +147,10 @@ async function obtenerProducto(req, res, next) {
     const { id } = req.params;
 
     const [rows] = await pool.query(
-      `SELECT p.*, c.nombre AS categoria
+      `SELECT p.*, c.nombre AS categoria, COALESCE(s.cantidad, 0) AS stock
        FROM producto p
        JOIN categoria c ON c.id_categoria = p.id_categoria
+       LEFT JOIN stock s ON s.id_producto = p.id_producto
        WHERE p.id_producto = ? AND p.estado = 1`,
       [id]
     );
@@ -201,6 +204,7 @@ async function crearProducto(req, res, next) {
     // paginadas (productos:lista:pagina1:limite20, etc.) — sin cambiar
     // esta línea, gracias al ajuste hecho en utils/cache.js.
     limpiarCache('productos:lista');
+    limpiarCache('categorias:lista');
 
     return ok(res, { id_producto: resultado.insertId }, 'Producto creado correctamente', 201);
   } catch (err) {
@@ -238,6 +242,7 @@ async function actualizarProducto(req, res, next) {
     );
 
     limpiarCache('productos:lista');
+    limpiarCache('categorias:lista');
 
     return ok(res, { id_producto: Number(id) }, 'Producto actualizado correctamente');
   } catch (err) {
@@ -261,6 +266,7 @@ async function eliminarProducto(req, res, next) {
     await pool.query('UPDATE producto SET estado = 0 WHERE id_producto = ?', [id]);
 
     limpiarCache('productos:lista');
+    limpiarCache('categorias:lista');
 
     return ok(res, null, 'Producto desactivado correctamente');
   } catch (err) {

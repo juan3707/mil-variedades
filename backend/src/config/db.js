@@ -23,6 +23,9 @@ const pool = mysql.createPool({
   // En serverless cada instancia abre su propio pool: se limita para no
   // agotar las conexiones máximas del plan de Aiven.
   connectionLimit: process.env.VERCEL ? 3 : 10,
+  maxIdle: process.env.VERCEL ? 1 : 5,
+  idleTimeout: 10000,
+  connectTimeout: 10000,
   charset: 'utf8mb4',
   ssl: { 
     rejectUnauthorized: false 
